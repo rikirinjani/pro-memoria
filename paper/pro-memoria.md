@@ -254,7 +254,13 @@ PM-1 is explicitly a derivative of AB-1. The differential state protocol, the Ha
 
 We believe PM-1 occupies a useful niche in the design space: it trades AB-1's superior density for universal portability. An agent framework cannot assume a tokenizer extension is installed; it can always assume ASCII works.
 
-### 5.3 Limitations
+### 5.3 Hybrid PM-1 / AB-1 Encoding
+
+PM-1 and AB-1 are not competing protocols — they occupy complementary positions in the same stack. PM-1 Morse is the universal bootstrap: it requires zero setup, works in any LLM environment, and guarantees that the first connection always succeeds. AB-1 Braille is the density upgrade: once the handshake confirms both sides support the tokenizer extension, ongoing DATA-phase communication can use Braille cells at ~20% lower token cost.
+
+The protocol state machine already supports this: the HANDSHAKE phase negotiates protocol version before any state data is exchanged. We extend this with `ENCODING` and `ENCODING_ACK` commands, so the initiator advertises `{morse, braille}` and the responder selects the best shared encoding. On error recovery or disconnect, the encoder resets to Morse (universal). This layering — PM-1 for bootstrap, AB-1 for ongoing density — gives each protocol the role it is best suited for, with zero additional configuration burden.
+
+### 5.4 Limitations
 
 - **Single-benchmark scope.** The Crucible trace is from AB-1's ecosystem. Our real-trace dataset addresses this but is limited to 8-byte states from one agent system.
 - **No trained embedding.** PM-1 tokens have no learned semantics for the model — they are opaque state identifiers. Fine-tuning could improve model awareness of protocol state, but this is future work.

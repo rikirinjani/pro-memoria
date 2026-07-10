@@ -24,6 +24,12 @@ class ProtocolState(Enum):
     DISCONNECT = auto()   # Clean shutdown
 
 
+# ── Encoding capabilities ─────────────────────────────────────────────
+
+ENCODING_MORSE = "morse"       # PM-1 default: ./- per byte (8 chars/byte)
+ENCODING_BRAILLE = "braille"   # AB-1: Unicode Braille cells (1 cell/byte)
+SUPPORTED_ENCODINGS = frozenset({ENCODING_MORSE, ENCODING_BRAILLE})
+
 # ── State transitions ─────────────────────────────────────────────────
 
 def next_state(current: ProtocolState, command: str) -> ProtocolState:
@@ -48,6 +54,8 @@ def next_state(current: ProtocolState, command: str) -> ProtocolState:
             'NAK': ProtocolState.DISCONNECT,
             'VERSION_ACK': ProtocolState.HANDSHAKE,
             'VERSION': ProtocolState.HANDSHAKE,
+            'ENCODING': ProtocolState.HANDSHAKE,
+            'ENCODING_ACK': ProtocolState.HANDSHAKE,
             'BYE': ProtocolState.DISCONNECT,
         },
         ProtocolState.SYNCING: {
@@ -94,7 +102,7 @@ def next_state(current: ProtocolState, command: str) -> ProtocolState:
 
 ALLOWED_COMMANDS: dict[ProtocolState, set[str]] = {
     ProtocolState.CLOSED: {'HELLO', 'VERSION'},
-    ProtocolState.HANDSHAKE: {'VERSION', 'VERSION_ACK', 'ACK', 'NAK', 'BYE'},
+    ProtocolState.HANDSHAKE: {'VERSION', 'VERSION_ACK', 'ENCODING', 'ENCODING_ACK', 'ACK', 'NAK', 'BYE'},
     ProtocolState.SYNCING: {'SYNC', 'STATE_REQ', 'STATE_REP', 'ACK', 'NAK', 'ERR', 'BYE'},
     ProtocolState.DATA: {
         'NOP', 'ACK', 'NAK', 'EOF', 'ERR', 'STATUS', 'ECHO',
@@ -115,6 +123,8 @@ HANDSHAKE_SEQUENCE: list[tuple[ProtocolState, str, str]] = [
     (ProtocolState.CLOSED, 'HELLO', 'initiate connection'),
     (ProtocolState.HANDSHAKE, 'VERSION', 'send protocol version'),
     (ProtocolState.HANDSHAKE, 'VERSION_ACK', 'acknowledge version'),
+    (ProtocolState.HANDSHAKE, 'ENCODING', 'advertise supported encodings'),
+    (ProtocolState.HANDSHAKE, 'ENCODING_ACK', 'confirm selected encoding'),
     (ProtocolState.HANDSHAKE, 'ACK', 'proceed to sync'),
     (ProtocolState.SYNCING, 'SYNC', 'request full state'),
     (ProtocolState.SYNCING, 'STATE_REP', 'send current state'),
