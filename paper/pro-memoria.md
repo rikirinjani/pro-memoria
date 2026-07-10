@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Large language model (LLM) agents generate significant token overhead tracking their internal state across multi-step tasks. Existing compact state representations either require tokenizer extensions (e.g., Agent Braille) or remain tied to JSON with modest compression. We present **Pro Memoria (PM-1)** , an ASCII-native binary protocol that encodes 8-bit state as 8-character Morse strings (`.` = 0, `-` = 1), combined with a Differential State Protocol (DSP) that emits only changed bytes and a two-tier error-correcting command lexicon (Hamming [8,4,4] with single-error correction and parity with single-error detection). Because `.` and `-` are unconditionally single tokens in every major tokenizer (cl100k_base, o200k_base, p50k_base, r50k_base — verified), PM-1 requires **zero setup**: no vocabulary extension, no Unicode registration, no configuration changes. On the AB-1 Crucible trace (1,417 single-byte states), PM-1 achieves 84.8% token savings versus delta-encoded JSON (cl100k_base). On 235 real agent self-harness traces (8-byte state vectors, 82.5% change rate), it achieves 60.8% savings. A sensitivity sweep across 1–128 byte states and 10–90% change rates shows PM-1 beats hex by 1.4–2× at ≤10% change rates on multi-byte states. PM-1 is implemented in ~750 lines of pure Python with zero dependencies and a documented 7-state protocol machine.
+Large language model (LLM) agents generate significant token overhead tracking their internal state across multi-step tasks. Existing compact state representations either require tokenizer extensions (e.g., Agent Braille) or remain tied to JSON with modest compression. We present **Pro Memoria (PM-1)** , an ASCII-native binary protocol that encodes 8-bit state as 8-character Morse strings (`.` = 0, `-` = 1), combined with a Differential State Protocol (DSP) that emits only changed bytes and a two-tier error-correcting command lexicon (Hamming [8,4,4] with single-error correction and parity with single-error detection). Because `.` and `-` are unconditionally single tokens in every major tokenizer (cl100k_base, o200k_base, p50k_base, r50k_base — verified), PM-1 requires **zero setup**: no vocabulary extension, no Unicode registration, no configuration changes. On the AB-1 Crucible trace (1,417 single-byte states), PM-1 achieves 84.8% token savings versus delta-encoded JSON (cl100k_base). On 237 real agent self-harness traces (8-byte state vectors, 82.6% change rate), it achieves 60.5% savings. A sensitivity sweep across 1–128 byte states and 10–90% change rates shows PM-1 beats hex by 1.4–2× at ≤10% change rates on multi-byte states. PM-1 is implemented in ~750 lines of pure Python with zero dependencies and a documented 7-state protocol machine.
 
 ---
 
@@ -30,7 +30,7 @@ The tradeoff is encoding density. AB-1 fits one 8-bit state in a single Unicode 
 2. **Zero-setup property** — proof that `.` and `-` are single tokens in cl100k_base, o200k_base, p50k_base, and r50k_base, making PM-1 immediately usable in any LLM environment.
 3. **Differential State Protocol** — emit-on-change frame format with grow/shrink support and configurable maximum state size (64KB DoS guard).
 4. **Two-tier error-correcting lexicon** — 16 Hamming [8,4,4] commands (single-bit correction, double-bit detection) and 128 parity-protected commands (single-bit detection), occupying the same 8-bit encoding space with explicit tier routing.
-5. **Comprehensive benchmarks** — evaluation on the AB-1 Crucible trace, 235 real agent self-harness traces, and a sensitivity sweep over byte-width and change rate.
+5. **Comprehensive benchmarks** — evaluation on the AB-1 Crucible trace, 237 real agent self-harness traces, and a sensitivity sweep over byte-width and change rate.
 
 ---
 
@@ -53,6 +53,8 @@ PM-1 diverges by replacing the Unicode Braille encoding with ASCII Morse. The tr
 **Hex encoding** (2 chars/byte) and **Base64** (4 chars per 3 bytes ≈ 1.33× overhead) are both ASCII-native and zero-setup. Hex is the simplest baseline: 16 tokens per byte (each nybble is one hex char). Base64 achieves 1.33 tokens per byte but requires padding and is less human-readable. Both are included as baselines in our benchmarks.
 
 **UTF-8 direct encoding** of ASCII-range bytes maps 1:1 to tokens in BPE tokenizers, but this is merely the raw representation — no compression.
+
+**Codebook compression** exploits low unique-state counts in agent trace data. When an agent session produces only 106 unique states out of 237 transitions, a codebook mapping each unique state to a 1-byte index and transmitting the codebook + index stream achieves strong compression. We include codebook as an additional baseline for the real-trace benchmark, noting it requires both encoder and decoder to share the codebook table.
 
 ### 2.3 Structured State Compression
 
@@ -131,7 +133,7 @@ We evaluate on two datasets:
 
 **AB-1 Crucible trace.** 1,417 single-byte state snapshots from AB-1's benchmark suite, representing an 8-dimensional agency model (I/O, logic, source, privacy, temporal, audit, priority). Only 6 unique masks; 748 state changes (52.8% emit ratio).
 
-**Real self-harness traces.** 235 traces from actual agent sessions in the self-harness system, encoded as 8-byte state vectors (agent type, outcome, duration bucket, tool-calls bucket, files bucket, failure category, failure severity, validation flag). 106 unique states; 82.5% state-change rate.
+**Real self-harness traces.** 237 traces from actual agent sessions in the self-harness system, encoded as 8-byte state vectors (agent type, outcome, duration bucket, tool-calls bucket, files bucket, failure category, failure severity, validation flag). 106 unique states; 82.6% state-change rate.
 
 We also generate synthetic states for sensitivity analysis: 500-step sequences at byte widths of 1, 8, 32, and 128, with change rates of 10%, 30%, 50%, 70%, and 90%.
 
@@ -146,6 +148,7 @@ All token counts use `tiktoken` and are reported for both `cl100k_base` (GPT-4/G
 - **Morse (raw):** 8 chars per byte, no delta
 - **Morse (DSP):** 8 chars per changed byte only
 - **AB-1 Braille (DSP):** Unicode cells, delta-encoded
+- **Codebook:** unique-state dictionary + index stream (Base64-encoded)
 
 ---
 
@@ -178,17 +181,18 @@ PM-1 (Morse DSP) achieves 84.8% token savings versus delta-encoded JSON on cl100
 
 Against the trivial ASCII baselines: hex is 77.9% cheaper than Morse on single-byte states because hex (2 chars/byte) always wins on single-byte, high-frequency-change workloads. The Morse advantage emerges on multi-byte states with low change rates.
 
-### 4.3 Real Self-Harness Traces (235 traces, 8-byte states)
+### 4.3 Real Self-Harness Traces (237 traces, 8-byte states)
 
 | Format | cl100k tokens | vs Delta JSON |
 |--------|--------------|--------------|
-| Delta JSON | 7,222 | baseline |
-| Hex | 1,285 | +82.2% vs Morse |
-| Base64 | 1,146 | +59.5% vs Morse |
-| Morse (DSP) | 2,829 | **60.8% savings** |
-| AB-1 Braille (DSP) | 1 | n/a (all zeros) |
+| Delta JSON | 7,290 | baseline |
+| Codebook | 750 | 89.7% savings (dictionary) |
+| Base64 | 1,153 | 84.2% savings |
+| Hex | 1,297 | 82.2% savings |
+| AB-1 Braille (DSP) | 2,297 | 68.5% savings |
+| **Morse (DSP)** | **2,880** | **60.5% savings** |
 
-On real agent traces with 82.5% change rate over 8-byte states, PM-1 saves 60.8% versus delta-encoded JSON. The high change rate (82.5%) reduces DSP's advantage — most steps emit a diff — which is why hex (1,285 tokens) outperforms Morse (2,829 tokens) here. This is consistent with the sensitivity sweep below.
+On real agent traces with 82.6% change rate over 8-byte states, PM-1 saves 60.5% versus delta-encoded JSON. The high change rate (82.6%) reduces DSP's advantage — most steps emit a diff — so hex (1,297 tokens) and Base64 (1,153 tokens) outperform Morse here. Codebook compression wins on this data shape by exploiting the limited unique-state palette (106/237). The AB-1 Braille result (2,297 tokens) reflects correct multi-byte state encoding across all 8 bytes per trace.
 
 ### 4.4 Sensitivity Sweep
 
@@ -265,7 +269,7 @@ The 64KB maximum state size bounds memory allocation for untrusted frames. The H
 
 ## 6. Conclusion
 
-We presented Pro Memoria (PM-1), an ASCII-native binary protocol for token-efficient agent state communication. By encoding 8-bit state as 8-character Morse strings and combining this with a differential state protocol and a two-tier error-correcting lexicon, PM-1 achieves 60–85% token savings versus delta-encoded JSON with zero setup — no tokenizer extension, no Unicode registration, no configuration changes. The protocol is fully implemented (~750 lines of Python), verified with exhaustive tests (256-byte roundtrip, 128/128 Hamming corrections, 56 DSP edge cases), and benchmarked on both synthetic and real agent traces.
+We presented Pro Memoria (PM-1), an ASCII-native binary protocol for token-efficient agent state communication. By encoding 8-bit state as 8-character Morse strings and combining this with a differential state protocol and a two-tier error-correcting lexicon, PM-1 achieves 60.5–84.8% token savings versus delta-encoded JSON with zero setup — no tokenizer extension, no Unicode registration, no configuration changes. The protocol is fully implemented (~750 lines of Python), verified with exhaustive tests (256-byte roundtrip, 128/128 Hamming corrections, 56 DSP edge cases), and benchmarked on both synthetic and real agent traces.
 
 PM-1 is not a replacement for AB-1 Braille, which achieves superior density through its tokenizer extension. Rather, PM-1 fills the gap for environments where an extension cannot be installed but token-efficient state communication is still required.
 

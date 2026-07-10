@@ -171,18 +171,22 @@ def fig4_realtraces():
     labels_map = {
         "Full JSON": "Full JSON",
         "Delta JSON (steelman)": "Delta JSON",
-        "Hex": "Hex",
+        "Codebook": "Codebook",
         "Base64": "Base64",
+        "Hex": "Hex",
         "Morse (raw)": "Morse Raw",
         "Morse (DSP)": "Morse DSP",
+        "Braille (DSP)": "AB-1 Braille",
     }
     colors_map = {
         "Full JSON": '#6b7280',
         "Delta JSON (steelman)": '#9ca3af',
-        "Hex": '#3b82f6',
+        "Codebook": '#059669',
         "Base64": '#10b981',
+        "Hex": '#3b82f6',
         "Morse (raw)": '#fbbf24',
         "Morse (DSP)": '#f59e0b',
+        "Braille (DSP)": '#8b5cf6',
     }
 
     labels = []
@@ -195,7 +199,7 @@ def fig4_realtraces():
         tokens_o2k.append(fmts[key]["o200k"])
         colors.append(colors_map[key])
 
-    fig, ax = plt.subplots(figsize=(8, 4.5))
+    fig, ax = plt.subplots(figsize=(9, 4.5))
     x = np.arange(len(labels))
     width = 0.35
 
@@ -204,14 +208,14 @@ def fig4_realtraces():
 
     for bar in bars1:
         val = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, val + 50,
-                f'{val:,}', ha='center', va='bottom', fontsize=8, fontweight='bold', color='#374151')
+        ax.text(bar.get_x() + bar.get_width()/2, val + 30,
+                f'{val:,}', ha='center', va='bottom', fontsize=7, fontweight='bold', color='#374151')
 
     ax.set_ylabel('Tokens', fontsize=12)
-    ax.set_title('Fig. 4: Real Self-Harness Traces — 235 traces, 8-byte states\nMorse DSP: 60.8% savings vs Delta JSON',
+    ax.set_title('Fig. 4: Real Self-Harness Traces — 237 traces, 8-byte states\nMorse DSP: 60.5% savings vs Delta JSON',
                  fontsize=13, fontweight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_xticklabels(labels, fontsize=8, rotation=25)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.legend(fontsize=10)

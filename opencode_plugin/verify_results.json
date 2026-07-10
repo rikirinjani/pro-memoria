@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-07-10T08:48:35.767472+00:00",
+  "verdict": "PASS",
+  "results": [
+    {
+      "test": "roundtrip_pass_rate",
+      "status": "PASS",
+      "detail": "237/237 pass (100.0%)"
+    },
+    {
+      "test": "zero_unrecoverable",
+      "status": "PASS",
+      "detail": "0 unrecoverable failures"
+    },
+    {
+      "test": "clean_encode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "truncation_detected",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "invalid_chars_detected",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "single_bit_flip_still_decodes",
+      "status": "PASS",
+      "detail": "Morse layer has no checksum — bit flips produce valid but wrong bytes"
+    },
+    {
+      "test": "stats_recorded_errors",
+      "status": "PASS",
+      "detail": "3 errors recorded"
+    },
+    {
+      "test": "flush_produced_file",
+      "status": "PASS",
+      "detail": "C:\\Users\\think\\self-harness\\traces\\verify-test-4-roundtrip.pm1"
+    },
+    {
+      "test": "replay_succeeded",
+      "status": "PASS",
+      "detail": "45 traces"
+    },
+    {
+      "test": "replay_state_match",
+      "status": "PASS",
+      "detail": "23/45 states match (lossy bucketing expected)"
+    },
+    {
+      "test": "stats_tracks_total",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "stats_tracks_errors",
+      "status": "PASS",
+      "detail": "4 errors"
+    },
+    {
+      "test": "stats_tracks_fallback",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "failure_log_exists",
+      "status": "PASS",
+      "detail": "4 failures logged"
+    },
+    {
+      "test": "stress_no_crash",
+      "status": "PASS",
+      "detail": "237 traces processed"
+    },
+    {
+      "test": "stress_success_rate",
+      "status": "PASS",
+      "detail": "237/237 (100.0%)"
+    },
+    {
+      "test": "pm1_smaller_than_json",
+      "status": "PASS",
+      "detail": "Morse=15168B, JSON=156292B, ratio=0.10x"
+    },
+    {
+      "test": "pm1_overhead_vs_raw",
+      "status": "PASS",
+      "detail": "raw states=1896B, morse overhead=13272B"
+    }
+  ]
+}
