@@ -57,17 +57,24 @@ The key insight of Pro Memoria is that ASCII `.` and `-` are **unconditionally 1
 
 ```
 morse/
-├── core.py           Phase 1: bits <-> Morse encoding (256 byte roundtrip)
-├── dsp.py            Phase 2: Differential State Protocol (DiffState, emit-on-change)
-├── lexicon.py        Phase 3: Hamming [8,4,4] commands + parity-protected tier
-├── protocol.py       Phase 3b: Protocol state machine (7 states, handshake, error recovery)
+├── core.py                 Phase 1: bits <-> Morse encoding (256 byte roundtrip)
+├── dsp.py                  Phase 2: Differential State Protocol (DiffState, emit-on-change)
+├── lexicon.py              Phase 3: Hamming [8,4,4] commands + parity-protected tier
+├── protocol.py             Phase 3b: Protocol state machine (7 states, handshake, error recovery)
+├── opencode_plugin/
+│   ├── adapter.py          PM1Session: record, flush, replay with Hamming ECC
+│   ├── failsafe.py         FailsafePM1: auto-disable on high error rate, failure logging
+│   ├── cli.py              pm1-trace CLI — one-shot trace recording and inspection
+│   └── verify_integration.py  33-test suite for real-trace roundtrip, ECC, disk corruption
 ├── bench/
-│   ├── token_efficiency.py   Multi-axis benchmark (hex, Base64, Morse, AB-1, JSON)
-│   ├── test_dsp.py           58 DSP edge-case tests
+│   ├── token_efficiency.py     Multi-axis benchmark (hex, Base64, Morse, AB-1, JSON)
+│   ├── test_dsp.py             58 DSP edge-case tests
 │   └── pre_vs_post_comparison.py  Pre-review vs post-review comparison
 ├── redteam/
-│   └── pro-memoria.md        Peer review artifacts (3 rounds)
-└── paper/                     (placeholder for manuscript)
+│   └── pro-memoria.md          Peer review artifacts (3 rounds)
+├── paper/                       Manuscript and figures
+├── CONTRIBUTORS.md              Authors and acknowledgments
+└── README.md
 ```
 
 ---
@@ -86,6 +93,35 @@ byte = morse_to_bits(morse)   # 65
 ds = DiffState()
 ds.diff(b'\x41\x42')          # '0:.-.....-|1:.-....-.|'
 ds.diff(b'\x41\xFF')          # '1:--------|'
+```
+
+---
+
+## CLI Usage
+
+PM-1 ships with a command-line interface for one-shot trace recording:
+
+```bash
+pm1-trace trace --agent <name> --outcome <pass|fail|partial|unknown> [options]
+```
+
+Common flags:
+```
+  --duration-s <secs>      Duration in seconds
+  --tool-calls <n>         Number of tool calls
+  --key-files <path> ...   Key files touched
+  --action "summary text"  Free-text summary (stored verbatim in trace)
+  --slug <name>            Custom filename slug
+  --fail-category <cat>    Failure category if outcome=fail
+  --fail-severity <sev>    Failure severity if outcome=fail
+```
+
+Traces are written to `~/self-harness/traces/` as `.pm1` with Hamming [8,4,4] error correction, falling back to `.json` if encoding fails.
+
+Inspect a trace:
+
+```bash
+pm1-trace info <path>
 ```
 
 ---
