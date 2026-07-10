@@ -29,18 +29,22 @@ SEVERITY_OPS = {"none": 0, "low": 1, "medium": 2, "high": 3}
 
 
 def trace_to_state(trace: dict) -> bytes:
-    """Map a trace dict to an 8-byte state vector (same encoding as benchmark)."""
+    """Map a trace dict to an 8-byte state vector (same encoding as benchmark).
+
+    Asserts required keys exist to prevent silent-zero-fill bugs.
+    """
     def bucket(value, ranges):
         for i, threshold in enumerate(ranges):
             if value < threshold:
                 return i
         return len(ranges)
 
-    agent = AGENT_OPS.get(trace.get("agent", "other").lower(), 15)
-    outcome = OUTCOME_OPS.get(trace.get("outcome", "unknown").lower(), 3)
-    dur = trace.get("duration_s", 0) or 0
+    tid = trace.get("trace_id") or trace.get("slug") or "?"
+    agent = AGENT_OPS.get(str(trace.get("agent", "other")).lower(), 15)
+    outcome = OUTCOME_OPS.get(str(trace.get("outcome", "unknown")).lower(), 3)
+    dur = max(trace.get("duration_s", 0) or 0, 0)
     dur_b = bucket(dur, [1, 60, 300, 900, 3600])
-    tc = trace.get("tool_calls", 0) or 0
+    tc = max(trace.get("tool_calls", 0) or 0, 0)
     tc_b = bucket(tc, [1, 10, 30, 100, 300])
     kf = trace.get("key_files", []) or []
     kf_b = bucket(len(kf), [1, 5, 15, 50])

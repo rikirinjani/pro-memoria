@@ -1,4 +1,11 @@
-"""PM-1 Failsafe — auto-detect corruption, auto-rollback, auto-log."""
+"""PM-1 Failsafe — auto-detect corruption, auto-rollback, auto-log.
+
+Hamming [8,4,4] is applied at the byte level: each nibble (4 bits) is
+encoded as an 8-bit codeword. An 8-byte state becomes 16 Hamming bytes
+before Morse encoding. Decoding reverses: Morse -> 16 bytes -> Hamming
+verify/correct -> 8 bytes. Single-bit flips are corrected; double-bit
+flips are detected as unrecoverable.
+"""
 
 import json
 import os
@@ -13,20 +20,51 @@ FAILURES_DIR = Path.home() / "self-harness" / "failures"
 import sys
 sys.path.insert(0, str(MORSE))
 import core
+from lexicon import hamming_encode, hamming_decode
 
 FAILURES_DIR.mkdir(parents=True, exist_ok=True)
 
-CORRUPTION_HEADERS = (
-    "corrupted_state", "roundtrip_mismatch", "hamming_unrecoverable",
-    "invalid_morse_char", "length_mismatch",
-)
+# Precompute Hamming codewords for all 16 nibble values
+_NIBBLE_TO_HAMMING = [hamming_encode(i) for i in range(16)]
+
+
+def _hamming_protect(data: bytes) -> bytes:
+    """8-byte state -> 16-byte Hamming [8,4,4] protected."""
+    result = bytearray()
+    for b in data:
+        result.append(_NIBBLE_TO_HAMMING[(b >> 4) & 0x0F])
+        result.append(_NIBBLE_TO_HAMMING[b & 0x0F])
+    return bytes(result)
+
+
+def _hamming_verify(data: bytes) -> tuple[bytes | None, bool, int]:
+    """16-byte Hamming data -> (8-byte state | None, unrecoverable, n_corrected)."""
+    if len(data) % 16 != 0:
+        return None, True, 0
+    result = bytearray()
+    corrected = 0
+    for i in range(0, len(data), 2):
+        upper, corr_u, err_u = hamming_decode(data[i])
+        if err_u:
+            return None, True, 0
+        if corr_u:
+            corrected += 1
+        lower, corr_l, err_l = hamming_decode(data[i + 1])
+        if err_l:
+            return None, True, 0
+        if corr_l:
+            corrected += 1
+        nib = ((upper & 0x0F) << 4) | (lower & 0x0F)
+        result.append(nib)
+    return bytes(result), False, corrected
+
 
 class FailsafePM1:
-    """Wraps PM-1 encode/decode with roundtrip verification and auto-regress.
+    """Wraps PM-1 encode/decode with Hamming ECC and auto-regress.
 
     State machine:
-        ACTIVE  → (on error) → DEGRADED → (on >30% errors) → DISABLED
-        DISABLED: all calls fall through to JSON passthrough, no PM-1 encoding.
+        ACTIVE -> (on >30% errors) -> DISABLED
+        DISABLED: all calls return None (JSON/hex passthrough).
     """
 
     ACTIVE = "ACTIVE"
@@ -36,7 +74,7 @@ class FailsafePM1:
     def __init__(self, session_id: str | None = None):
         self.session_id = session_id or f"pm1-{int(time.time())}"
         self.status = self.ACTIVE
-        self.error_window = []  # rolling window of last N bools (True=error)
+        self.error_window = []
         self.window_size = 10
         self.total_encodes = 0
         self.total_errors = 0
@@ -72,9 +110,9 @@ class FailsafePM1:
         return record
 
     def encode(self, data: bytes) -> str | None:
-        """Encode bytes to PM-1 Morse. Requires state width to be multiple of 8 bytes.
+        """Encode bytes with Hamming protection then Morse.
 
-        Returns None on unrecoverable failure (falls through to JSON/hex).
+        Returns None on failure (caller falls through to JSON/hex).
         Auto-regresses if error rate > 30% in rolling window.
         """
         self.total_encodes += 1
@@ -87,18 +125,24 @@ class FailsafePM1:
             if len(self.error_window) > self.window_size:
                 self.error_window.pop(0)
             self._record_failure("invalid_state_width", {
-                "data_len": len(data),
+                "data_hex": data.hex(), "data_len": len(data),
                 "error": f"state width must be multiple of 8, got {len(data)}",
             })
-            if self.error_rate > 0.3 and len(self.error_window) >= self.window_size:
-                self.status = self.DISABLED
+            self._check_disable()
             return None
 
         try:
-            morse = core.encode_bytes(data)
-            decoded = core.decode_bytes(morse)
-            if decoded != data:
-                raise ValueError(f"roundtrip mismatch: {data.hex()}: {morse} -> {decoded.hex()}")
+            protected = _hamming_protect(data)
+            morse = core.encode_bytes(protected)
+            decoded_protected = core.decode_bytes(morse)
+            if decoded_protected != protected:
+                raise ValueError(f"roundtrip mismatch at byte level")
+            recovered, unrecoverable, n_corrected = _hamming_verify(decoded_protected)
+            if unrecoverable or recovered is None:
+                raise ValueError("Hamming unrecoverable on freshly encoded data")
+            if recovered != data:
+                raise ValueError(f"Hamming roundtrip mismatch: {data.hex()} -> {recovered.hex()}")
+            self.total_corrected += n_corrected
             self.error_window.append(False)
             if len(self.error_window) > self.window_size:
                 self.error_window.pop(0)
@@ -108,18 +152,19 @@ class FailsafePM1:
             self.error_window.append(True)
             if len(self.error_window) > self.window_size:
                 self.error_window.pop(0)
-            err_type = "roundtrip_mismatch" if "roundtrip" in str(e) else "corrupted_state"
+            err_type = "hamming_unrecoverable" if "unrecoverable" in str(e) else "corrupted_state"
             self._record_failure(err_type, {
-                "data_hex": data.hex(),
-                "data_len": len(data),
-                "error": str(e),
+                "data_hex": data.hex(), "data_len": len(data), "error": str(e),
             })
-            if self.error_rate > 0.3 and len(self.error_window) >= self.window_size:
-                self.status = self.DISABLED
+            self._check_disable()
             return None
 
+    def _check_disable(self):
+        if self.error_rate > 0.3 and len(self.error_window) >= self.window_size:
+            self.status = self.DISABLED
+
     def encode_state(self, state_bytes: bytes) -> str | None:
-        """Encode a single 8-byte state vector. Falls through to hex on failure."""
+        """Encode a single 8-byte state. Falls through to hex on failure."""
         result = self.encode(state_bytes)
         if result is not None:
             return result
@@ -130,25 +175,37 @@ class FailsafePM1:
             return None
         h = state_bytes.hex()
         self._record_failure("fallback_to_hex", {
-            "state_hex": state_bytes.hex(),
-            "reason": "PM-1 encode failed",
+            "state_hex": state_bytes.hex(), "reason": "PM-1 ECC encode failed",
         })
         return h
 
     def decode(self, morse: str) -> bytes | None:
-        """Decode PM-1 Morse back to bytes. Returns None if unrecoverable."""
+        """Decode Morse bytes back through Hamming verify.
+
+        Returns corrected bytes, or None on unrecoverable corruption.
+        """
         try:
-            data = core.decode_bytes(morse)
-            return data
+            protected = core.decode_bytes(morse)
+            recovered, unrecoverable, n_corrected = _hamming_verify(protected)
+            if unrecoverable:
+                self._record_failure("hamming_unrecoverable", {
+                    "morse": morse[:40], "reason": "double-bit error, cannot recover",
+                })
+                return None
+            if n_corrected > 0:
+                self.total_corrected += n_corrected
+                self._record_failure("hamming_corrected", {
+                    "morse": morse[:40], "n_corrected": n_corrected,
+                })
+            return recovered
         except Exception as e:
             self._record_failure("invalid_morse_char", {
-                "morse": morse[:40],
-                "error": str(e),
+                "morse": morse[:40], "error": str(e),
             })
             return None
 
     def decode_state(self, encoded: str) -> bytes | None:
-        """Decode a state from PM-1 Morse or hex fallback."""
+        """Decode a state from PM-1 Morse (ECC) or hex fallback."""
         if len(encoded) == 16 and all(c in "0123456789abcdef" for c in encoded.lower()):
             return bytes.fromhex(encoded)
         return self.decode(encoded)
@@ -186,4 +243,9 @@ class CorruptedMorse:
             chars[bit_index] = "."
         return "".join(chars)
 
-
+    @staticmethod
+    def flip_nth_morse_char(morse: str, n: int) -> str:
+        chars = list(morse)
+        orig = chars[n]
+        chars[n] = "." if orig == "-" else "-"
+        return "".join(chars)

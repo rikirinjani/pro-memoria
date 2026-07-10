@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-10T08:48:35.767472+00:00",
+  "timestamp": "2026-07-10T08:57:55.537035+00:00",
   "verdict": "PASS",
   "results": [
     {
@@ -18,6 +18,26 @@
       "detail": ""
     },
     {
+      "test": "total_corrected_starts_at_zero",
+      "status": "PASS",
+      "detail": "0"
+    },
+    {
+      "test": "single_bit_corrected",
+      "status": "PASS",
+      "detail": "expected 4142434445464748, got 4142434445464748"
+    },
+    {
+      "test": "total_corrected_incremented",
+      "status": "PASS",
+      "detail": "1 corrections"
+    },
+    {
+      "test": "double_bit_detected_as_unrecoverable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
       "test": "truncation_detected",
       "status": "PASS",
       "detail": ""
@@ -28,14 +48,9 @@
       "detail": ""
     },
     {
-      "test": "single_bit_flip_still_decodes",
+      "test": "errors_recorded",
       "status": "PASS",
-      "detail": "Morse layer has no checksum — bit flips produce valid but wrong bytes"
-    },
-    {
-      "test": "stats_recorded_errors",
-      "status": "PASS",
-      "detail": "3 errors recorded"
+      "detail": "10 errors"
     },
     {
       "test": "flush_produced_file",
@@ -63,14 +78,19 @@
       "detail": "4 errors"
     },
     {
-      "test": "stats_tracks_fallback",
+      "test": "total_corrected_no_phantom",
       "status": "PASS",
       "detail": ""
     },
     {
       "test": "failure_log_exists",
       "status": "PASS",
-      "detail": "4 failures logged"
+      "detail": ""
+    },
+    {
+      "test": "status_is_active_or_disabled",
+      "status": "PASS",
+      "detail": ""
     },
     {
       "test": "stress_no_crash",
@@ -85,12 +105,42 @@
     {
       "test": "pm1_smaller_than_json",
       "status": "PASS",
-      "detail": "Morse=15168B, JSON=156292B, ratio=0.10x"
+      "detail": "Morse=30336B, JSON=156292B, ratio=0.19x"
     },
     {
-      "test": "pm1_overhead_vs_raw",
+      "test": "pm1_hamming_overhead",
       "status": "PASS",
-      "detail": "raw states=1896B, morse overhead=13272B"
+      "detail": "raw states=1896B, Hamming bytes=3792B, Morse overhead=26544B"
+    },
+    {
+      "test": "ecc_clean_roundtrip",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "ecc_single_bit_corrected",
+      "status": "PASS",
+      "detail": "unrec=False, corrected=1, recovered=4142434445464748"
+    },
+    {
+      "test": "ecc_double_bit_detected",
+      "status": "PASS",
+      "detail": "unrec=True, recovered=None"
+    },
+    {
+      "test": "fs_clean_encode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "fs_single_bit_corrected_on_disk_read",
+      "status": "PASS",
+      "detail": "original=4142434445464748, decoded=4142434445464748"
+    },
+    {
+      "test": "fs_second_correction_tracked",
+      "status": "PASS",
+      "detail": "corrected=2 (prev=1)"
     }
   ]
 }
