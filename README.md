@@ -6,6 +6,22 @@
 
 ---
 
+## Design Philosophy: Pro Memoria vs Shorthand
+
+Pro memoria — "for memory" in Latin. Skip the routine, mark the transition.
+
+| Theater Rehearsal | Agent Session |
+|---|---|
+| "We'll do the anthem here" (skips singing) | `⠇` (skips verbose state JSON) |
+| Only rehearse scene transitions | Only emit state changes |
+| Everyone knows the routine | System knows the encoding |
+| Saves 2 hours of rehearsal time | Saves 92% of state-tracking tokens |
+| Focus on the tricky parts | Focus compute on actual work |
+
+**Pro memoria is not shorthand.** Shorthand compresses content. Pro memoria eliminates **content that doesn't need to be spoken** because everyone already knows it. The routine is the encoding. Only the transitions are worth transmitting.
+
+---
+
 ## Inspiration
 
 Pro Memoria is directly inspired by **Agent Braille (AB-1)** by [Tetrahedroned](https://github.com/Tetrahedroned/Agent-Braille), which encodes 8-bit agency state as single Unicode Braille cells (U+2800–U+28FF). AB-1's core ideas — the orthogonal 8-dimensional state model, the differential state protocol (emit-on-change), and the Hamming [8,4,4] error-correcting code — are adapted here with a different encoding layer.
