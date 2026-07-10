@@ -105,7 +105,7 @@ class FailsafePM1:
             "details": details,
         }
         path = FAILURES_DIR / f"{ts}-{error_type}-{slug[:40]}.json"
-        path.write_text(json.dumps(record, indent=2, ensure_ascii=False))
+        path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
         self.failure_ids.append(record["trace_id"])
         self.last_error = record
         return record
@@ -180,33 +180,33 @@ class FailsafePM1:
         })
         return h
 
-    def decode(self, morse: str) -> bytes | None:
-        """Decode Morse bytes back through Hamming verify.
+    def decode(self, encoded: str) -> bytes | None:
+        """Decode an encoded string back through Hamming verify.
 
         Returns corrected bytes, or None on unrecoverable corruption.
         """
         try:
-            protected = core.decode_bytes(morse)
+            protected = self.encoder.decode_str(encoded)
             recovered, unrecoverable, n_corrected = _hamming_verify(protected)
             if unrecoverable:
                 self._record_failure("hamming_unrecoverable", {
-                    "morse": morse[:40], "reason": "double-bit error, cannot recover",
+                    "encoded": encoded[:40], "reason": "double-bit error, cannot recover",
                 })
                 return None
             if n_corrected > 0:
                 self.total_corrected += n_corrected
                 self._record_failure("hamming_corrected", {
-                    "morse": morse[:40], "n_corrected": n_corrected,
+                    "encoded": encoded[:40], "n_corrected": n_corrected,
                 })
             return recovered
         except Exception as e:
-            self._record_failure("invalid_morse_char", {
-                "morse": morse[:40], "error": str(e),
+            self._record_failure("invalid_encoding", {
+                "encoded": encoded[:40], "error": str(e),
             })
             return None
 
     def decode_state(self, encoded: str) -> bytes | None:
-        """Decode a state from PM-1 Morse (ECC) or hex fallback."""
+        """Decode a state from encoded form or hex fallback."""
         if len(encoded) == 16 and all(c in "0123456789abcdef" for c in encoded.lower()):
             return bytes.fromhex(encoded)
         return self.decode(encoded)

@@ -315,7 +315,7 @@ def main():
         "results": results,
     }
     report_path = HERE / "verify_results.json"
-    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False))
+    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\n  Report: {report_path}")
 
     if failed > 0:

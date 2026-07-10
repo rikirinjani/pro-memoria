@@ -12,6 +12,7 @@ sys.path.insert(0, str(MORSE))
 
 from opencode_plugin.adapter import trace_to_state, state_to_trace, TRACES_DIR
 from opencode_plugin.failsafe import FailsafePM1
+from hybrid import ENCODING_MORSE, ENCODING_BRAILLE
 
 
 def trace_one(args):
@@ -33,7 +34,8 @@ def trace_one(args):
     slug = args.slug or f"{now}-{args.agent}-cli"
 
     state = trace_to_state(trace)
-    fs = FailsafePM1(session_id=slug)
+    encoding = args.encoding or ENCODING_MORSE
+    fs = FailsafePM1(session_id=slug, encoding=encoding)
     encoded = fs.encode(state)
 
     if encoded:
@@ -42,6 +44,7 @@ def trace_one(args):
             "pm1_version": 1,
             "session_id": slug,
             "timestamp": trace["timestamp"],
+            "encoding": encoding,
             "n_states": 1,
             "state_width": 8,
             "failsafe": fs.stats(),
@@ -49,12 +52,12 @@ def trace_one(args):
         }
         if args.action:
             payload["action"] = args.action
-        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"PM-1: {path}")
     else:
         path = TRACES_DIR / f"{slug}.json"
         trace["_failsafe_fallback"] = True
-        path.write_text(json.dumps(trace, indent=2, ensure_ascii=False))
+        path.write_text(json.dumps(trace, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"JSON (fallback): {path}")
 
     return 0
@@ -75,12 +78,16 @@ def info_cmd(args):
         print(f"Version:   PM-1 v{payload['pm1_version']}")
         print(f"Session:   {payload.get('session_id', '?')}")
         print(f"Timestamp: {payload.get('timestamp', '?')}")
+        print(f"Encoding:  {payload.get('encoding', 'morse')}")
         print(f"States:    {payload.get('n_states', 0)}")
         print(f"Failsafe:  {payload.get('failsafe', {})}")
         if payload.get("action"):
             print(f"Action:    {payload['action']}")
-        morse_len = len(payload["pm1"])
-        print(f"Morse:     {morse_len} chars ({morse_len * 0.0039:.1f} tokens at ~3.9 tok/char)")
+        enc = payload.get("encoding", "morse")
+        payload_len = len(payload["pm1"])
+        tok_per_char = {"morse": 0.125, "braille": 1.0}
+        tok_est = payload_len * tok_per_char.get(enc, 0.125)
+        print(f"Payload:   {payload_len} chars ({tok_est:.0f} tokens, {enc})")
     else:
         print(f"Format: fallback JSON")
         print(f"Agent:  {payload.get('agent', '?')}")
@@ -102,6 +109,8 @@ def main():
     tp.add_argument("--fail-category", default="", help="Failure category (tool, config, workflow, ...)")
     tp.add_argument("--fail-severity", default="", help="Failure severity (low, medium, high)")
     tp.add_argument("--no-validation", action="store_true", help="Skip validation flag")
+    tp.add_argument("--encoding", default="", choices=["", "morse", "braille"],
+                    help="Encoding: morse (default) or braille")
 
     ip = sub.add_parser("info", help="Inspect a trace file")
     ip.add_argument("path", help="Path to .pm1 or .json trace")

@@ -56,7 +56,11 @@ PM-1 diverges by replacing the Unicode Braille encoding with ASCII Morse. The tr
 
 **Codebook compression** exploits low unique-state counts in agent trace data. When an agent session produces only 106 unique states out of 237 transitions, a codebook mapping each unique state to a 1-byte index and transmitting the codebook + index stream achieves strong compression. We include codebook as an additional baseline for the real-trace benchmark, noting it requires both encoder and decoder to share the codebook table.
 
-### 2.3 Structured State Compression
+### 2.3 Hybrid Morse–Braille Encoding
+
+PM-1 and AB-1 are not competing protocols — they occupy complementary positions in the same stack. PM-1 Morse is the universal bootstrap (zero setup, guaranteed to work in any LLM environment). AB-1 Braille is the density upgrade (1 Unicode cell per byte vs 8 ASCII chars). Recent work on the PM-1 codebase [398ce8d] extends the protocol handshake with `ENCODING`/`ENCODING_ACK` commands that negotiate a shared encoding: the initiator advertises `{morse, braille}` and the responder selects the best common option. On error recovery, the encoder resets to Morse. This layering gives each protocol the role it is best suited for — PM-1 for guaranteed initial connectivity, AB-1 for ongoing density — with zero configuration overhead. The `HybridEncoder` class implements both encodings without external dependencies (Braille encoding is pure arithmetic over U+2800).
+
+### 2.4 Structured State Compression
 
 Prior work on state delta trajectories (latent-space deltas), A2A (agent-to-agent transport), and MCP (Model Context Protocol) addresses different parts of the agent communication stack. PM-1 is orthogonal to these: it compresses the state *representation* that travels over any transport.
 
@@ -125,7 +129,7 @@ PM-1 defines a 7-state connection lifecycle:
 | RECOVERY | Re-syncing | RESET, REQ, STATE_REP, ACK |
 | DISCONNECT | Clean shutdown | BYE, HALT |
 
-Version capability negotiation uses reserved parity commands `VERSION` (0x0E) and `VERSION_ACK` (0x0F) as the mandatory first exchange in any handshake.
+Version capability negotiation uses reserved parity commands `VERSION` (0x0E) and `VERSION_ACK` (0x0F) as the mandatory first exchange in any handshake. Encoding capability is negotiated via `ENCODING` and `ENCODING_ACK` commands: the initiator advertises `{morse, braille}` and the responder selects the best shared encoding. On error recovery, the encoder resets to Morse.
 
 ### 3.5 Benchmark Datasets
 

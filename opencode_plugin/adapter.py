@@ -12,8 +12,8 @@ MORSE = HERE.parent
 
 import sys
 sys.path.insert(0, str(MORSE))
-from core import encode_bytes, decode_bytes
 from dsp import DiffState
+from hybrid import ENCODING_MORSE, ENCODING_BRAILLE
 from opencode_plugin.failsafe import FailsafePM1, FAILURES_DIR
 
 TRACES_DIR = Path.home() / "self-harness" / "traces"
@@ -85,10 +85,11 @@ def state_to_trace(state_bytes: bytes, base: dict | None = None) -> dict:
 class PM1Session:
     """PM-1 session recorder. Encodes agent steps as Morse, writes traces with failsafe."""
 
-    def __init__(self, session_id: str | None = None):
+    def __init__(self, session_id: str | None = None, encoding: str = ENCODING_MORSE):
         self.session_id = session_id or datetime.now(timezone.utc).strftime("pm1-%Y%m%dT%H%M%S")
-        self.failsafe = FailsafePM1(session_id=self.session_id)
-        self.dsp = DiffState()
+        self.failsafe = FailsafePM1(session_id=self.session_id, encoding=encoding)
+        self.dsp = DiffState(encoding=encoding)
+        self.encoding = encoding
         self.buffer: list[dict] = []
         self.state_buffer: list[bytes] = []
         self.pm1_lines: list[str] = []
@@ -132,13 +133,14 @@ class PM1Session:
                 "pm1_version": 1,
                 "session_id": self.session_id,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
+                "encoding": self.encoding,
                 "n_states": len(self.state_buffer),
                 "state_width": 8,
                 "failsafe": self.failsafe.stats(),
                 "metadata": metadata or {},
                 "pm1": combined,
             }
-            path.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
+            path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         else:
             path = TRACES_DIR / f"{slug}.json"
             fallback = {"trace_id": slug, "failsafe": self.failsafe.stats(),
@@ -148,7 +150,7 @@ class PM1Session:
                     fallback.update(self.buffer[0])
                 else:
                     fallback["entries"] = self.buffer
-                path.write_text(json.dumps(fallback, indent=2, ensure_ascii=False))
+                path.write_text(json.dumps(fallback, indent=2, ensure_ascii=False), encoding="utf-8")
             else:
                 return None
 

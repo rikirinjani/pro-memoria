@@ -2,28 +2,17 @@
 
 ## Plan 1: Dual-Mode Encoding (PM-1 + AB-1 Hybrid)
 
-### Status
-
-| Component | Status |
-|-----------|--------|
-| Encoding constants (`protocol.py`) | Done |
-| Handshake commands (`ENCODING`/`ENCODING_ACK`) | Done |
-| `HybridEncoder` class (`hybrid.py`) | Done |
-| HybridEncoder tests (9/9 pass, `test_hybrid.py`) | Done |
-| Paper Discussion §5.3 hybrid subsection | Done |
-
-### Remaining
-
-| # | Task | File(s) | Effort |
-|---|------|---------|--------|
-| 1 | Wire `HybridEncoder` into `dsp.py` — `DiffState.diff()` and `DiffState.apply()` must call `enc.encode_byte()` / `enc.decode_char()` instead of hardcoded Morse. Add `encoding` param to `DiffState.__init__()`. | `dsp.py`, `hybrid.py` | Small |
-| 2 | Wire `HybridEncoder` into `adapter.py` — `trace_to_state()` → `FailsafePM1.encode_state()` should use the negotiated encoding. Add `encoding` param to `PM1Session.__init__()`. | `adapter.py`, `hybrid.py` | Small |
-| 3 | Wire `HybridEncoder` into `cli.py` — `pm1-trace trace --encoding braille` flag. Defaults to Morse. | `cli.py` | Tiny |
-| 4 | Implement full handshake with encoding negotiation — `HybridHandshake` class that sends `ENCODING`, waits for `ENCODING_ACK`, selects encoding, transitions to SYNCING. | new file `handshake.py` | Medium |
-| 5 | Integration test: start two `HybridEncoder` instances, run full handshake (HELLO → VERSION → ENCODING → ENCODING_ACK → ACK → SYNC → DATA), verify encoding is Braille when both sides support it, Morse when one side doesn't. | `test_hybrid.py` or new `test_handshake.py` | Medium |
-| 6 | Integration test: encode a real self-harness trace through the full Braille path, verify roundtrip through `FailsafePM1`. | `verify_integration.py` | Small |
-| 7 | Update `FailsafePM1` to accept encoding param so Hamming protect/verify uses correct byte representation. | `failsafe.py` | Small |
-| 8 | Update paper §2 (Related Work) to cite `HYBRID_ENCODING.md` design and note the synergy as explicit contribution. | `paper/pro-memoria.md` | Tiny |
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Wire `HybridEncoder` into `dsp.py` — `DiffState.diff()`/`apply()` use `enc.encode_byte()` | Done | `dsp.py`, `hybrid.py` |
+| 2 | Wire `HybridEncoder` into `adapter.py` — `PM1Session.__init__(encoding=)` | Done | `adapter.py` |
+| 3 | Wire `HybridEncoder` into `cli.py` — `--encoding braille` flag | Done | `cli.py` |
+| 4 | Implement full handshake — `HybridHandshake` class | Done | `handshake.py` |
+| 5 | Integration test: handshake + Braille roundtrip | Done | `test_handshake.py` (17/17) |
+| 6 | Integration test: Braille through FailsafePM1 | Done | Covered in `test_handshake.py` |
+| 7 | Update `FailsafePM1` to accept encoding param | Done | `failsafe.py` |
+| 8 | Update paper §2 to cite hybrid encoding | Pending | `paper/pro-memoria.md` |
+| 9 | Design philosophy: "skip what's known" table in README | Done | `README.md` |
 
 ### Architecture
 
