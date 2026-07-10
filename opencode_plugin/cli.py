@@ -1,7 +1,8 @@
-"""PM-1 CLI — one-shot trace recording and session management."""
+"""PM-1 CLI — one-shot trace recording, inspection, and savings audit."""
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +14,23 @@ sys.path.insert(0, str(MORSE))
 from opencode_plugin.adapter import trace_to_state, state_to_trace, TRACES_DIR
 from opencode_plugin.failsafe import FailsafePM1
 from hybrid import ENCODING_MORSE, ENCODING_BRAILLE
+
+
+TOK_PER_CHAR = {"morse": 0.125, "braille": 1.0}
+
+
+def _estimate_json_bytes(trace: dict) -> int:
+    """Estimate how many bytes a compact JSON version of this trace would be."""
+    return len(json.dumps(trace, separators=(",", ":"), ensure_ascii=False).encode())
+
+
+def _format_savings(pm1_size: int, json_size: int) -> str:
+    ratio = pm1_size / max(json_size, 1)
+    pct = (1 - ratio) * 100
+    if pct >= 0:
+        return f"ratio={ratio:.2f}x, saved {pct:.1f}%"
+    else:
+        return f"ratio={ratio:.2f}x, { -pct:.1f}% overhead"
 
 
 def trace_one(args):
@@ -32,6 +50,7 @@ def trace_one(args):
 
     now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     slug = args.slug or f"{now}-{args.agent}-cli"
+    json_ref_size = _estimate_json_bytes(trace)
 
     state = trace_to_state(trace)
     encoding = args.encoding or ENCODING_MORSE
@@ -53,12 +72,15 @@ def trace_one(args):
         if args.action:
             payload["action"] = args.action
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        savings = _format_savings(len(encoded), json_ref_size)
+        tok_per_char = TOK_PER_CHAR.get(encoding, 0.125)
         print(f"PM-1: {path}")
+        print(f"       {len(encoded)} chars ({len(encoded) * tok_per_char:.1f} tok, {encoding}) — {savings}")
     else:
         path = TRACES_DIR / f"{slug}.json"
         trace["_failsafe_fallback"] = True
         path.write_text(json.dumps(trace, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"JSON (fallback): {path}")
+        print(f"JSON (fallback): {path} — {json_ref_size} B")
 
     return 0
 
@@ -85,13 +107,77 @@ def info_cmd(args):
             print(f"Action:    {payload['action']}")
         enc = payload.get("encoding", "morse")
         payload_len = len(payload["pm1"])
-        tok_per_char = {"morse": 0.125, "braille": 1.0}
-        tok_est = payload_len * tok_per_char.get(enc, 0.125)
-        print(f"Payload:   {payload_len} chars ({tok_est:.0f} tokens, {enc})")
+        tok_per_char = TOK_PER_CHAR.get(enc, 0.125)
+        tok_est = payload_len * tok_per_char
+        json_size = _estimate_json_bytes(payload)
+        savings = _format_savings(payload_len, json_size)
+        print(f"Payload:   {payload_len} chars ({tok_est:.0f} tok, {enc}) — {savings}")
     else:
         print(f"Format: fallback JSON")
         print(f"Agent:  {payload.get('agent', '?')}")
         print(f"Outcome:{payload.get('outcome', '?')}")
+
+
+def audit_cmd(args):
+    pm1_dir = Path(args.dir or TRACES_DIR)
+    if not pm1_dir.is_dir():
+        print(f"Directory not found: {pm1_dir}", file=sys.stderr)
+        return 1
+
+    pm1_files = sorted(pm1_dir.glob("*.pm1"))
+    json_files = sorted(pm1_dir.glob("*.json"))
+
+    if not pm1_files and not json_files:
+        print(f"No trace files found in {pm1_dir}")
+        return 0
+
+    total_pm1_chars = 0
+    total_json_bytes = 0
+    pm1_count = 0
+    json_count = 0
+    by_encoding = {"morse": {"count": 0, "chars": 0, "json_bytes": 0},
+                   "braille": {"count": 0, "chars": 0, "json_bytes": 0}}
+
+    for f in pm1_files:
+        try:
+            payload = json.loads(f.read_text(encoding="utf-8", errors="replace"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if payload.get("pm1_version") == 1 and "pm1" in payload:
+            pm1_chars = len(payload["pm1"])
+            json_bytes = _estimate_json_bytes(payload)
+            total_pm1_chars += pm1_chars
+            total_json_bytes += json_bytes
+            pm1_count += 1
+            enc = payload.get("encoding", "morse")
+            if enc in by_encoding:
+                by_encoding[enc]["count"] += 1
+                by_encoding[enc]["chars"] += pm1_chars
+                by_encoding[enc]["json_bytes"] += json_bytes
+
+    json_count = len(json_files)
+
+    print(f"PM-1 trace audit: {pm1_dir}")
+    print(f"  {'=' * 50}")
+    print(f"  Total .pm1 files:  {pm1_count}")
+    print(f"  Total .json files: {json_count}")
+    if pm1_count > 0:
+        ratio = total_pm1_chars / max(total_json_bytes, 1)
+        pct = (1 - ratio) * 100
+        print(f"  {'=' * 50}")
+        print(f"  PM-1 chars:     {total_pm1_chars:>8,}")
+        print(f"  JSON equivalent:{total_json_bytes:>8,} B")
+        print(f"  Ratio:          {ratio:.2f}x")
+        print(f"  Savings:        {pct:.1f}%")
+        print(f"  {'=' * 50}")
+        for enc, data in sorted(by_encoding.items()):
+            if data["count"] > 0:
+                r = data["chars"] / max(data["json_bytes"], 1)
+                p = (1 - r) * 100
+                print(f"  [{enc}] {data['count']} files: {data['chars']} chars vs {data['json_bytes']} B ({p:.1f}%)")
+
+    print(f"\n  Trace dir: {pm1_dir.resolve()}")
+    return 0
 
 
 def main():
@@ -115,11 +201,16 @@ def main():
     ip = sub.add_parser("info", help="Inspect a trace file")
     ip.add_argument("path", help="Path to .pm1 or .json trace")
 
+    ap = sub.add_parser("audit", help="Scan all traces and show aggregate savings")
+    ap.add_argument("--dir", default="", help="Trace directory (default: ~/self-harness/traces)")
+
     args = parser.parse_args()
     if args.command == "trace":
         return trace_one(args)
     elif args.command == "info":
         return info_cmd(args)
+    elif args.command == "audit":
+        return audit_cmd(args)
     parser.print_help()
     return 1
 

@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-07-10T10:27:38.870922+00:00",
+  "timestamp": "2026-07-10T11:13:27.762488+00:00",
   "verdict": "PASS",
   "results": [
     {
       "test": "roundtrip_pass_rate",
       "status": "PASS",
-      "detail": "239/239 pass (100.0%)"
+      "detail": "240/240 pass (100.0%)"
     },
     {
       "test": "zero_unrecoverable",
@@ -95,22 +95,22 @@
     {
       "test": "stress_no_crash",
       "status": "PASS",
-      "detail": "239 traces processed"
+      "detail": "240 traces processed"
     },
     {
       "test": "stress_success_rate",
       "status": "PASS",
-      "detail": "239/239 (100.0%)"
+      "detail": "240/240 (100.0%)"
     },
     {
       "test": "pm1_smaller_than_json",
       "status": "PASS",
-      "detail": "Morse=30592B, JSON=157865B, ratio=0.19x"
+      "detail": "Morse=30720B, JSON=162613B, ratio=0.19x"
     },
     {
       "test": "pm1_hamming_overhead",
       "status": "PASS",
-      "detail": "raw states=1912B, Hamming bytes=3824B, Morse overhead=26768B"
+      "detail": "raw states=1920B, Hamming bytes=3840B, Morse overhead=26880B"
     },
     {
       "test": "ecc_clean_roundtrip",
