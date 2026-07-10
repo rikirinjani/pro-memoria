@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Cloned AB-1 reference (not part of this project)
+ab1_repo/
+
+# Generated benchmark output
+bench/results/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
