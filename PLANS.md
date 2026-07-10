@@ -1,5 +1,16 @@
 # Implementation Plans
 
+## Plan 0: Savings Dashboard (UI)
+
+**Status:** Consideration
+
+A visual dashboard showing trace savings over time. Ideas:
+- TUI dashboard: `pm1-trace dashboard` — live-refresh view of latest traces with savings %, aggregate stats, encoding breakdown
+- HTML export: `pm1-trace audit --html report.html` — self-contained page with charts (ECharts or plain SVG), per-day/week savings trends, top-saving agents
+- Web server: lightweight local server (e.g. `pm1-trace serve`) that shows the dashboard in a browser, auto-refreshes on new traces
+
+Key metrics to surface: total JSON bytes avoided, per-encoding savings, per-agent savings, rolling 7-day trend. Not blocking anything — nice to have when the protocol has real usage data to visualize.
+
 ## Plan 1: Dual-Mode Encoding (PM-1 + AB-1 Hybrid)
 
 | # | Task | Status | Notes |
