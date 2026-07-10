@@ -31,7 +31,9 @@ SEVERITY_OPS = {"none": 0, "low": 1, "medium": 2, "high": 3}
 def trace_to_state(trace: dict) -> bytes:
     """Map a trace dict to an 8-byte state vector (same encoding as benchmark).
 
-    Asserts required keys exist to prevent silent-zero-fill bugs.
+    Falls back gracefully for heterogeneous trace schemas (timeline agents,
+    session wraps, coordinator handoffs). Fields are required for the 8-byte
+    topology encoding; missing fields default to 0/"unknown".
     """
     def bucket(value, ranges):
         for i, threshold in enumerate(ranges):

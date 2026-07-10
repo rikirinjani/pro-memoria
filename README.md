@@ -116,6 +116,8 @@ Morse DSP is optimized for **low-change-rate agent-state monitoring** (<15% chan
 
 See full sensitivity sweep in `bench/token_efficiency.py`.
 
+**ECC overhead.** Above numbers are raw Morse (no error correction). With Hamming [8,4,4] enabled, each 8-byte state becomes 16 Hamming-protected bytes before Morse encoding — roughly doubling token cost. Use ECC for checkpoint/session-resume (low frequency, high stakes). Skip it for high-frequency intra-session ticks where a bad tick is overwritten by the next one anyway.
+
 ---
 
 ## License
