@@ -1,29 +1,31 @@
 """Pro Memoria — Phase 2: Differential State Protocol (DSP).
 
 Emits only changed bytes. Frame-based diff format with grow/shrink support.
+Supports multiple encodings via HybridEncoder (PM-1 Morse, AB-1 Braille).
 
 Frame format:
-    <index>:<8-morse-chars>|<index>:<8-morse-chars>|...
+    <index>:<encoded-byte>|<index>:<encoded-byte>|...
 
 Control commands (embedded in frame):
     T:<new_length>|  — truncate state to new_length bytes
 
-Examples:
+Examples (Morse encoding):
     "12:.-.....-|44:--......|"  → byte 12 = 0x41, byte 44 = 0xC0
     "T:2|"                       → truncate to 2 bytes
 
 Security: MAX_STATE_BYTES (64 KB) bounds decoder allocations.
 """
 
-from core import bits_to_morse, morse_to_bits
+from hybrid import HybridEncoder, ENCODING_MORSE, ENCODING_BRAILLE
 
 MAX_STATE_BYTES = 65536  # maximum allowed state size (DoS guard)
 
 
-def encode_diff(old: bytes, new: bytes) -> str:
+def encode_diff(old: bytes, new: bytes, encoder: HybridEncoder | None = None) -> str:
     """Compute a diff frame from old state to new state.
 
     Only bytes that changed are emitted. Handles grow/shrink.
+    Uses the given encoder (default: PM-1 Morse).
 
     >>> encode_diff(b'', b'')
     ''
@@ -36,16 +38,19 @@ def encode_diff(old: bytes, new: bytes) -> str:
     >>> encode_diff(b'\\x00\\x00\\x00', b'A\\x00\\xff')
     '0:.-.....-|2:--------|'
     """
+    if encoder is None:
+        encoder = HybridEncoder(ENCODING_MORSE)
+
     parts = []
 
     # Changed bytes within overlapping region
     for i in range(min(len(old), len(new))):
         if old[i] != new[i]:
-            parts.append(f"{i}:{bits_to_morse(new[i])}")
+            parts.append(f"{i}:{encoder.encode_byte(new[i])}")
 
     # New bytes (state grew)
     for i in range(len(old), len(new)):
-        parts.append(f"{i}:{bits_to_morse(new[i])}")
+        parts.append(f"{i}:{encoder.encode_byte(new[i])}")
 
     # Truncation (state shrank)
     if len(new) < len(old):
@@ -54,8 +59,10 @@ def encode_diff(old: bytes, new: bytes) -> str:
     return '|'.join(parts) + ('|' if parts else '')
 
 
-def decode_diff(state: bytes, frame: str) -> bytes:
+def decode_diff(state: bytes, frame: str, encoder: HybridEncoder | None = None) -> bytes:
     """Apply a diff frame to an existing state and return new state.
+
+    Uses the given encoder (default: PM-1 Morse).
 
     >>> decode_diff(b'', '')
     b''
@@ -68,6 +75,9 @@ def decode_diff(state: bytes, frame: str) -> bytes:
     >>> decode_diff(b'', '0:.-.....-|2:--------|')
     b'A\\x00\\xff'
     """
+    if encoder is None:
+        encoder = HybridEncoder(ENCODING_MORSE)
+
     if not frame:
         return state
 
@@ -92,15 +102,12 @@ def decode_diff(state: bytes, frame: str) -> bytes:
             raise ValueError(f"invalid diff entry: {entry!r}")
 
         index = int(entry[:colon])
-        morse = entry[colon + 1:]
-
-        if len(morse) != 8:
-            raise ValueError(f"invalid morse in diff entry: {entry!r}")
+        encoded = entry[colon + 1:]
 
         if index >= MAX_STATE_BYTES:
             raise ValueError(f"byte index {index} exceeds max state size {MAX_STATE_BYTES}")
 
-        value = morse_to_bits(morse)
+        value = encoder.decode_char(encoded)
 
         if index >= len(buf):
             buf.extend(b'\x00' * (index - len(buf) + 1))
@@ -125,12 +132,17 @@ class DiffState:
     ''
     """
 
-    def __init__(self, initial: bytes = b''):
+    def __init__(self, initial: bytes = b'', encoding: str = ENCODING_MORSE):
         self._state = bytearray(initial)
+        self.encoder = HybridEncoder(encoding)
 
     @property
     def state(self) -> bytes:
         return bytes(self._state)
+
+    @property
+    def encoding(self) -> str:
+        return self.encoder.encoding
 
     def diff(self, new_state: bytes) -> str:
         """Compare current state to new_state and emit diff frame.
@@ -138,7 +150,7 @@ class DiffState:
         Internal state is updated to new_state.
         """
         old = bytes(self._state)
-        frame = encode_diff(old, new_state)
+        frame = encode_diff(old, new_state, encoder=self.encoder)
         self._state = bytearray(new_state)
         return frame
 
@@ -154,7 +166,7 @@ class DiffState:
         >>> ds.state
         b'A\\xff'
         """
-        new_state = decode_diff(bytes(self._state), frame)
+        new_state = decode_diff(bytes(self._state), frame, encoder=self.encoder)
         self._state = bytearray(new_state)
         return frame
 
@@ -164,7 +176,7 @@ class DiffState:
         Useful for initial handshake or recovery.
         """
         self._state = bytearray(new_state)
-        return ''.join(f"{i}:{bits_to_morse(b)}|" for i, b in enumerate(new_state))
+        return ''.join(f"{i}:{self.encoder.encode_byte(b)}|" for i, b in enumerate(new_state))
 
     def __repr__(self) -> str:
         return f"DiffState({bytes(self._state)!r})"

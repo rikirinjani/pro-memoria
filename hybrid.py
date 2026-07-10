@@ -66,6 +66,20 @@ class HybridEncoder:
         """Reset to Morse (default) — e.g. on error recovery."""
         self._encoding = ENCODING_MORSE
 
+    def encode_bytes(self, data: bytes) -> str:
+        """Encode a bytes object to the current encoding."""
+        return ''.join(self.encode_byte(b) for b in data)
+
+    def decode_str(self, s: str) -> bytes:
+        """Decode an encoded string back to bytes."""
+        width = 8 if self._encoding == ENCODING_MORSE else 1
+        if len(s) % width != 0:
+            raise ValueError(
+                f"encoded string length ({len(s)}) must be multiple of "
+                f"encoding character width ({width})"
+            )
+        return bytes(self.decode_char(s[i:i+width]) for i in range(0, len(s), width))
+
 
 # ── Fast encode/decode helpers (no lexicon/core import needed) ──────
 

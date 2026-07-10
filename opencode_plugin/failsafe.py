@@ -19,7 +19,7 @@ FAILURES_DIR = Path.home() / "self-harness" / "failures"
 
 import sys
 sys.path.insert(0, str(MORSE))
-import core
+from hybrid import HybridEncoder, ENCODING_MORSE, ENCODING_BRAILLE
 from lexicon import hamming_encode, hamming_decode
 
 FAILURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -71,8 +71,9 @@ class FailsafePM1:
     DEGRADED = "DEGRADED"
     DISABLED = "DISABLED"
 
-    def __init__(self, session_id: str | None = None):
+    def __init__(self, session_id: str | None = None, encoding: str = ENCODING_MORSE):
         self.session_id = session_id or f"pm1-{int(time.time())}"
+        self.encoder = HybridEncoder(encoding)
         self.status = self.ACTIVE
         self.error_window = []
         self.window_size = 10
@@ -133,8 +134,8 @@ class FailsafePM1:
 
         try:
             protected = _hamming_protect(data)
-            morse = core.encode_bytes(protected)
-            decoded_protected = core.decode_bytes(morse)
+            encoded = self.encoder.encode_bytes(protected)
+            decoded_protected = self.encoder.decode_str(encoded)
             if decoded_protected != protected:
                 raise ValueError(f"roundtrip mismatch at byte level")
             recovered, unrecoverable, n_corrected = _hamming_verify(decoded_protected)
@@ -146,7 +147,7 @@ class FailsafePM1:
             self.error_window.append(False)
             if len(self.error_window) > self.window_size:
                 self.error_window.pop(0)
-            return morse
+            return encoded
         except Exception as e:
             self.total_errors += 1
             self.error_window.append(True)

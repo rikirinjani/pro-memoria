@@ -20,6 +20,18 @@ Pro memoria — "for memory" in Latin. Skip the routine, mark the transition.
 
 **Pro memoria is not shorthand.** Shorthand compresses content. Pro memoria eliminates **content that doesn't need to be spoken** because everyone already knows it. The routine is the encoding. Only the transitions are worth transmitting.
 
+Every layer of PM-1 applies this same principle:
+
+| Layer | Skips | Why it's known |
+|-------|-------|---------------|
+| Differential State Protocol | Unchanged bytes | Previous state is cached |
+| 8-byte topology | Full trace text, timestamps, file paths | Schema is shared at session start |
+| Completeness flag | Missing-fields noise | Schema tells us which fields exist |
+| Hamming ECC | Corruption re-send | Corrected in one step, no retransmission |
+| Hybrid AB-1 encoding | Morse overhead | Negoti­ated in handshake |
+
+Pro memoria is encoding what's new, trusting what's already there. The protocol's name is the design.
+
 ---
 
 ## When to use PM-1
