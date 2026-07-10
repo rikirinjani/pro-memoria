@@ -1,8 +1,8 @@
 # Pro Memoria
 
-**ASCII-native binary protocol for AI agent state communication.**
+**Single-agent state telemetry protocol.** Encodes 8-bit binary state as ASCII Morse (`.` for 0, `-` for 1) with differential emission, Hamming error correction, and handshake recovery. ~85% token savings vs delta-JSON on its design target.
 
-`Pro Memoria` (Latin: *"for memory"*) encodes 8-bit binary state as 8-character ASCII Morse strings (`.` for 0, `-` for 1), with differential state emission and optional error correction. ~85% token savings vs delta-JSON with **zero setup** — no Unicode, no tokenizer extension, no vocabulary changes.
+`Pro Memoria` (Latin: *"for memory"*) is **not** a general log compressor — it's for **single-agent evolving state** where change between ticks is small and infrequent. Use it for agent session resume, cross-model handoff, pipe-safe agent communication, long-running monitors, and low-power edge agents. For multi-agent task logs (discrete unrelated events), use codebook or Base64 instead.
 
 ---
 
@@ -19,6 +19,20 @@ Pro memoria — "for memory" in Latin. Skip the routine, mark the transition.
 | Focus on the tricky parts | Focus compute on actual work |
 
 **Pro memoria is not shorthand.** Shorthand compresses content. Pro memoria eliminates **content that doesn't need to be spoken** because everyone already knows it. The routine is the encoding. Only the transitions are worth transmitting.
+
+---
+
+## When to use PM-1
+
+| ✅ Use it for | ❌ Not for |
+|---|---|
+| Single agent state, tick-by-tick | Multi-agent task/event logs |
+| <15% change rate between ticks | >50% change rate (discrete events) |
+| Session resume / cross-model handoff | General-purpose data compression |
+| Pipe-safe communication (plain ASCII) | When every last token matters (Base64 wins at high change) |
+| Lossy channels needing error correction | Where simpler formats are sufficient |
+
+**Classic pattern:** An agent runs for 200 steps, state shifts gradually (priority, mode, context). PM-1 emits only the transitions — 60–85% fewer tokens than delta-JSON — and Hamming code catches any corruption between steps.
 
 ---
 
