@@ -76,16 +76,31 @@ ds.diff(b'\x41\xFF')          # '1:--------|'
 
 ---
 
-## Benchmark Results (AB-1 Crucible trace, 1417 states, cl100k_base)
+## Benchmark Results
+
+### Real agent traces (237 traces, 106 unique states, 82.6% change rate, cl100k_base)
+
+| Format | Tokens | vs Delta-JSON |
+|--------|--------|---------------|
+| Delta JSON (steelman) | 7,290 | baseline |
+| **Codebook** | **750** | **+89.7%** dictionary approach |
+| **Base64** | **1,153** | **+84.2%** ASCII baseline |
+| Hex | 1,297 | +82.2% |
+| Morse (raw) | 2,175 | +70.2% |
+| Braille (DSP) | 2,297 | +68.5% (all 8 bytes) |
+| **Morse (DSP)** | **2,880** | **+60.5%** PM-1 |
+
+Morse DSP is optimized for **low-change-rate agent-state monitoring** (<15% change), where synthetic sweeps show ~70% savings over hex. Real self-harness traces (82.6% change rate) represent **discrete task-completion events** — consecutive rows are different subagents, not a single evolving state. Codebook compression exploits the limited unique-state palette (106/237) and wins on this data shape.
+
+### Synthetic: AB-1 Crucible low-change trace (1,417 states, 7% change rate, cl100k_base)
 
 | Format | Tokens | vs Steelman JSON |
 |--------|--------|-----------------|
 | Steelman JSON | 28,076 | baseline |
 | **Morse DSP** | **4,270** | **84.8% savings** |
-| Hex | 945 | 77.9% *more* efficient than Morse |
-| AB-1 Braille | 2,244 | 92.0% savings (needs tokenizer extension) |
+| Hex | 945 | 77.9% *more* tokens than Morse |
 
-Morse wins at ≤10% change rates on multi-byte states (1.4–2× fewer tokens than hex). Hex wins at high change rates. See full sensitivity sweep in `bench/token_efficiency.py`.
+See full sensitivity sweep in `bench/token_efficiency.py`.
 
 ---
 

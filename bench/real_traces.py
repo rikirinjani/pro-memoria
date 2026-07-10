@@ -206,12 +206,34 @@ def encode_braille_dsp(states):
         from ab1 import State, encode_stream
         braille_states = []
         for s in states:
-            mask = int.from_bytes(s, "big")
-            braille_states.append(State.from_mask(mask & 0xFF))
+            for byte_val in s:
+                braille_states.append(State.from_mask(byte_val & 0xFF))
         result, stats = encode_stream(braille_states)
         return result
     except Exception:
         return "[AB-1 not available]"
+
+
+def encode_codebook(states):
+    """Codebook compression: map each unique 8-byte state to a 1-byte index.
+
+    Wire format: [4-byte N(codebook)] + [N*8 bytes codebook] + [N(indices) bytes indices]
+    Then Base64-encoded for fair comparison (ASCII-safe, portable).
+    """
+    import struct
+    unique = {}
+    indices = bytearray()
+    for s in states:
+        if s not in unique:
+            unique[s] = len(unique)
+        indices.append(unique[s])
+    codebook = bytearray()
+    for s in sorted(unique, key=lambda x: unique[x]):
+        codebook.extend(s)
+    n = len(unique)
+    header = struct.pack("<I", n)
+    payload = bytes(header) + bytes(codebook) + bytes(indices)
+    return base64.b64encode(payload).decode()
 
 
 def run():
@@ -243,11 +265,14 @@ def run():
     print(f"\n  {'Format':22s} {'Chars':>8s} {'cl100k':>8s} {'o200k':>8s}")
     print(f"  {'-'*22} {'-'*8} {'-'*8} {'-'*8}")
 
+    s_codebook = encode_codebook(states)
+
     formats = [
         ("Full JSON", s_json),
         ("Delta JSON (steelman)", s_json_d),
         ("Hex", s_hex),
         ("Base64", s_b64),
+        ("Codebook", s_codebook),
         ("Morse (raw)", s_morse),
         ("Morse (DSP)", s_morse_dsp),
     ]
@@ -274,6 +299,8 @@ def run():
             note = "<-- PM-1"
         elif name == "Braille (DSP)":
             note = "<-- AB-1"
+        elif name == "Codebook":
+            note = "dictionary approach"
         elif name in ("Hex", "Base64"):
             note = "ASCII baseline"
         print(f"    {name:22s} {pct:>+6.1f}% {note}")
