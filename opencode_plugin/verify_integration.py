@@ -241,6 +241,38 @@ def test_8_disk_corruption_simulation():
           f"corrected={fs.total_corrected} (prev={prev_corrected})")
 
 
+def test_9_completeness_flag():
+    """Completeness flag: non-standard traces mark byte 7 bit 1 = 1."""
+    print("\n  Test 9: Completeness flag — partial vs full schema")
+    from opencode_plugin.adapter import trace_to_state
+
+    full = {"agent": "orchestrator", "outcome": "pass", "duration_s": 120,
+            "tool_calls": 5, "key_files": ["a.py", "b.py"],
+            "failure": {}, "validation": True}
+    partial = {"agent": "general", "outcome": "unknown",
+               "tool_calls": 0, "failure": {}}
+
+    state_full = trace_to_state(full)
+    state_partial = trace_to_state(partial)
+
+    full_incomplete = bool(state_full[7] & 0x02)
+    partial_incomplete = bool(state_partial[7] & 0x02)
+    full_val = bool(state_full[7] & 0x01)
+    partial_val = bool(state_partial[7] & 0x01)
+
+    check("full_trace_marked_complete", PASS if not full_incomplete else FAIL,
+          f"byte7={state_full[7]}")
+    check("partial_trace_marked_incomplete", PASS if partial_incomplete else FAIL,
+          f"byte7={state_partial[7]}")
+    check("full_validation_preserved", PASS if full_val else FAIL)
+    check("partial_validation_is_false", PASS if not partial_val else FAIL)
+
+    # Verify roundtrip preserves the flag
+    from opencode_plugin.adapter import state_to_trace
+    reconstructed = state_to_trace(state_partial)
+    check("reconstructed_incomplete_flag", PASS if reconstructed.get("_incomplete") else FAIL)
+
+
 def main():
     print("=" * 62)
     print("  PM-1 OpenCode Integration Verification")
@@ -255,6 +287,7 @@ def main():
         ("Stress encode all", test_6_stress_encode_all_traces),
         ("Size comparison", test_7_pm1_file_size_comparison),
         ("Disk corruption sim", test_8_disk_corruption_simulation),
+        ("Completeness flag", test_9_completeness_flag),
     ]
 
     for name, fn in tests:

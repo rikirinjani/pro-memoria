@@ -56,10 +56,11 @@ def trace_to_state(trace: dict) -> bytes:
     fail_b = cat_map.get(fail.get("category", "none").lower(), 0) if fail else 0
     sev_b = SEVERITY_OPS.get(fail.get("severity", "none").lower(), 0) if fail else 0
     val_b = 1 if trace.get("validation") else 0
+    incomplete = 0 if ("duration_s" in trace and "key_files" in trace) else 1
 
     return bytes([agent & 0xFF, outcome & 0xFF, dur_b & 0xFF,
                   tc_b & 0xFF, kf_b & 0xFF, fail_b & 0xFF,
-                  sev_b & 0xFF, val_b & 0xFF])
+                  sev_b & 0xFF, val_b | (incomplete << 1)])
 
 
 def state_to_trace(state_bytes: bytes, base: dict | None = None) -> dict:
@@ -69,10 +70,13 @@ def state_to_trace(state_bytes: bytes, base: dict | None = None) -> dict:
     b = list(state_bytes)
     agent_rev = {v: k for k, v in AGENT_OPS.items()}
     outcome_rev = {v: k for k, v in OUTCOME_OPS.items()}
+    validation = bool(b[7] & 0x01)
+    incomplete = bool(b[7] & 0x02)
     result = {"agent": agent_rev.get(b[0], "other"),
               "outcome": outcome_rev.get(b[1], "unknown"),
               "duration_s": 0, "tool_calls": 0, "key_files": [],
-              "failure": {}, "validation": bool(b[7])}
+              "failure": {}, "validation": validation,
+              "_incomplete": incomplete}
     if base:
         result.update(base)
     return result

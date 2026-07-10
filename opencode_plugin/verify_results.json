@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-10T08:57:55.537035+00:00",
+  "timestamp": "2026-07-10T09:04:52.938242+00:00",
   "verdict": "PASS",
   "results": [
     {
@@ -141,6 +141,31 @@
       "test": "fs_second_correction_tracked",
       "status": "PASS",
       "detail": "corrected=2 (prev=1)"
+    },
+    {
+      "test": "full_trace_marked_complete",
+      "status": "PASS",
+      "detail": "byte7=1"
+    },
+    {
+      "test": "partial_trace_marked_incomplete",
+      "status": "PASS",
+      "detail": "byte7=2"
+    },
+    {
+      "test": "full_validation_preserved",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "partial_validation_is_false",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "reconstructed_incomplete_flag",
+      "status": "PASS",
+      "detail": ""
     }
   ]
 }
