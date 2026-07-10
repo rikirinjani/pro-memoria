@@ -37,15 +37,17 @@ Agent A                           Agent B
 
 On error recovery (`ERROR → RECOVERY → RESET`): `enc.reset()` to Morse, re-negotiate encoding in handshake.
 
-### Token Cost
+### Token Cost (measured, 500 ticks, 8-byte state, 25% change, cl100k_base)
 
-| Wiring | Per-byte | Per-tick (2 bytes) | Session (500 ticks) |
-|--------|----------|-------------------|-------------------|
-| PM-1 only | 8 tok | ~10 tok | ~5,000 tok |
-| PM-1 → AB-1 | 1 tok | ~8 tok | ~4,000 tok (-20%) |
-| AB-1 without ext | 3 tok | ~12 tok | ~6,000 tok (+20%) |
+| Mode | Total tokens | vs PM-1 alone |
+|------|-------------|---------------|
+| PM-1 Morse | ~6,100 | baseline |
+| Braille (no ext, framed) | ~6,000 | ~2% better |
+| Braille (with ext, framed) | ~3,000 | ~51% better |
+
+The "without ext" case is roughly a wash — Braille's per-cell density (1 cell/byte vs 8 chars) offsets the tokenizer fragmentation even on stock tokenizers at this change rate. The load-bearing case for the upgrade is not "avoiding AB-1-without-ext losses" (those don't exist at this rate) but the **2× improvement on the with-ext path**. The handshake exists to maintain the universal bootstrap guarantee (PM-1 always works first), not to prevent a phantom regression.
 
 ### Risks
 
-- **AB-1 dependency.** `HybridEncoder` currently implements Braille encoding as pure arithmetic (`0x2800 + byte`). This does NOT require the AB-1 package. However, for true AB-1 compatibility (command tier routing, tokenizer extension check), an optional `ab1` extra dependency may be needed. Low risk — the arithmetic path covers 95% of use cases.
-- **Tokenizer extension detection.** How does `ENCODING` know whether Braille cells are atomic? Answer: it doesn't — the agent admin knows. The flag is configured per-deployment, not auto-detected. If unsure, don't advertise `braille`.
+- **AB-1 dependency.** `HybridEncoder` implements Braille encoding as pure arithmetic (`0x2800 + byte`). No external AB-1 package required. True AB-1 compatibility (tokenizer extension check, command tier routing) would need an optional `ab1` extra but is deferred — arithmetic path covers 95% of use cases.
+- **Tokenizer extension detection.** The agent admin configures `braille` capability per-deployment. No auto-detection. If unsure, don't advertise it.

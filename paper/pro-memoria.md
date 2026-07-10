@@ -260,9 +260,11 @@ We believe PM-1 occupies a useful niche in the design space: it trades AB-1's su
 
 ### 5.3 Hybrid PM-1 / AB-1 Encoding
 
-PM-1 and AB-1 are not competing protocols — they occupy complementary positions in the same stack. PM-1 Morse is the universal bootstrap: it requires zero setup, works in any LLM environment, and guarantees that the first connection always succeeds. AB-1 Braille is the density upgrade: once the handshake confirms both sides support the tokenizer extension, ongoing DATA-phase communication can use Braille cells at ~20% lower token cost.
+PM-1 and AB-1 are not competing protocols — they occupy complementary positions in the same stack. PM-1 Morse is the universal bootstrap: it requires zero setup, works in any LLM environment, and guarantees that the first connection always succeeds. AB-1 Braille is the density upgrade: once the handshake confirms both sides support the tokenizer extension, ongoing DATA-phase communication can use Braille cells.
 
-The protocol state machine already supports this: the HANDSHAKE phase negotiates protocol version before any state data is exchanged. We extend this with `ENCODING` and `ENCODING_ACK` commands, so the initiator advertises `{morse, braille}` and the responder selects the best shared encoding. On error recovery or disconnect, the encoder resets to Morse (universal). This layering — PM-1 for bootstrap, AB-1 for ongoing density — gives each protocol the role it is best suited for, with zero additional configuration burden.
+Measured on a 500-tick, 8-byte state, 25%-change-rate scenario (cl100k_base), Braille without the tokenizer extension is comparable to PM-1 Morse (~2% better at this change rate — Braille's per-cell density offsets tokenizer fragmentation on stock tokenizers). With the extension active, Braille achieves ~51% savings over Morse alone. The handshake gating exists to maintain the universal bootstrap guarantee — PM-1 always works on the first connection — not to prevent a phantom regression in the without-ext case.
+
+The protocol state machine supports this extension: `ENCODING` and `ENCODING_ACK` commands in the HANDSHAKE phase let the initiator advertise `{morse, braille}` and the responder select the best shared encoding. On error recovery, the encoder resets to Morse.
 
 ### 5.4 Limitations
 
