@@ -109,9 +109,14 @@ def info_cmd(args):
         payload_len = len(payload["pm1"])
         tok_per_char = TOK_PER_CHAR.get(enc, 0.125)
         tok_est = payload_len * tok_per_char
-        json_size = _estimate_json_bytes(payload)
-        savings = _format_savings(payload_len, json_size)
-        print(f"Payload:   {payload_len} chars ({tok_est:.0f} tok, {enc}) — {savings}")
+        sv = payload.get("savings")
+        if sv:
+            print(f"Payload:   {payload_len} chars ({tok_est:.0f} tok, {enc}) — "
+                  f"ratio={sv['ratio']}x, saved {sv['savings_pct']}%")
+        else:
+            json_size = _estimate_json_bytes(payload)
+            s = _format_savings(payload_len, json_size)
+            print(f"Payload:   {payload_len} chars ({tok_est:.0f} tok, {enc}) — {s}")
     else:
         print(f"Format: fallback JSON")
         print(f"Agent:  {payload.get('agent', '?')}")
@@ -145,7 +150,8 @@ def audit_cmd(args):
             continue
         if payload.get("pm1_version") == 1 and "pm1" in payload:
             pm1_chars = len(payload["pm1"])
-            json_bytes = _estimate_json_bytes(payload)
+            sv = payload.get("savings")
+            json_bytes = sv["json_bytes"] if sv else _estimate_json_bytes(payload)
             total_pm1_chars += pm1_chars
             total_json_bytes += json_bytes
             pm1_count += 1

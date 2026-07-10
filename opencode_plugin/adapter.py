@@ -94,6 +94,11 @@ class PM1Session:
         self.state_buffer: list[bytes] = []
         self.pm1_lines: list[str] = []
         self.prev_state: bytes | None = None
+        self.total_json_bytes = 0
+        self.total_pm1_chars = 0
+
+    def _estimate_json_bytes(self, trace: dict) -> int:
+        return len(json.dumps(trace, separators=(",", ":"), ensure_ascii=False).encode())
 
     def record(self, trace: dict) -> str | None:
         """Record a trace step. Returns PM-1 Morse string or hex fallback."""
@@ -104,6 +109,8 @@ class PM1Session:
         if encoded is None:
             self.buffer.append(trace)
             return None
+        self.total_json_bytes += self._estimate_json_bytes(trace)
+        self.total_pm1_chars += len(encoded)
         self.state_buffer.append(state)
         self.pm1_lines.append(encoded)
         self.buffer.append(trace)
@@ -129,6 +136,10 @@ class PM1Session:
         combined = self.encode_complete()
         if combined is not None:
             path = TRACES_DIR / f"{slug}.pm1"
+            pm1_chars = len(combined)
+            ratio = pm1_chars / max(self.total_json_bytes, 1)
+            savings = {"pm1_chars": pm1_chars, "json_bytes": self.total_json_bytes,
+                       "ratio": round(ratio, 3), "savings_pct": round((1 - ratio) * 100, 1)}
             payload = {
                 "pm1_version": 1,
                 "session_id": self.session_id,
@@ -137,6 +148,7 @@ class PM1Session:
                 "n_states": len(self.state_buffer),
                 "state_width": 8,
                 "failsafe": self.failsafe.stats(),
+                "savings": savings,
                 "metadata": metadata or {},
                 "pm1": combined,
             }
@@ -182,9 +194,12 @@ class PM1Session:
         return traces
 
     def stats(self) -> dict:
-        return {
-            "session_id": self.session_id,
-            "n_records": len(self.buffer),
-            "n_states": len(self.state_buffer),
-            "failsafe": self.failsafe.stats(),
-        }
+        r = {"session_id": self.session_id, "n_records": len(self.buffer),
+             "n_states": len(self.state_buffer), "failsafe": self.failsafe.stats()}
+        if self.total_json_bytes > 0:
+            ratio = self.total_pm1_chars / self.total_json_bytes
+            r["savings"] = {"pm1_chars": self.total_pm1_chars,
+                            "json_bytes": self.total_json_bytes,
+                            "ratio": round(ratio, 3),
+                            "savings_pct": round((1 - ratio) * 100, 1)}
+        return r
