@@ -273,7 +273,26 @@ The protocol state machine supports this extension: `ENCODING` and `ENCODING_ACK
 - **Human-unfriendly.** PM-1 is designed for machine-to-machine communication. Developers debugging agent state should use a separate rendering layer.
 - **Unicode tokenizers not tested.** SentencePiece-based models (Gemma, Llama-1/2) tokenize ASCII differently. The `tiktoken`-family tokenizers where `.` and `-` are atomic cover the major API-hosted LLMs but not all.
 
-### 5.4 Security Considerations
+### 5.5 Further Discussion
+
+**The Crucible-to-Real gap is driven by change rate, not state width.** The Crucible trace (84.8% savings) has a 52.8% emit ratio on single-byte states. The real-trace dataset (60.5% savings) has an 82.6% emit ratio on 8-byte states. The gap narrows when the comparison is controlled: on 8-byte states at 50% change rate (roughly the Crucible emit ratio), the sensitivity sweep reports Morse savings of approximately 60–70% versus delta-JSON on that sweep's own baseline. The headline savings in each case is dominated by a single parameter — the fraction of steps that trigger an emit — rather than by the encoding scheme. We report both numbers because both are real, and neither is more "true" than the other: they reflect different operating points in the same design space. A practitioner should estimate their expected change rate from their own agent traces and interpolate between the two.
+
+**Codebook compression is the pragmatic baseline to beat, not JSON.** On the real-trace dataset, codebook compression (map unique 8-byte states to 1-byte indices, transmit dictionary once) achieves 89.7% savings versus delta-JSON — substantially higher than PM-1's 60.5%. Codebook is simpler, requires no encoding scheme, and hits high compression on any dataset with few unique states. PM-1 cannot match codebook on this metric. The relevant question is what codebook *cannot* do: it requires a two-pass scan (first pass to build the dictionary, second pass to emit indices), making it unsuitable for streaming or real-time communication where future states are unknown. It has no error detection or correction — a single corrupted index produces a wrong state with no signal. And the dictionary must be re-transmitted on any context reset, amortized across the trace length rather than per-state. PM-1 is a single-pass, streaming-first protocol that trades peak compression efficiency for operational simplicity and error resilience. For offline trace archival, codebook is strictly better; for live agent handoff, PM-1's design choices make sense.
+
+**Hex wins at high change rates.** On the real-trace dataset (82.6% emit ratio), hex saves 82.2% versus delta-JSON — far better than PM-1's 60.5%. The sensitivity sweep confirms the crossover threshold precisely: Morse beats hex when the change rate is at or below 10% on multi-byte states; hex dominates at higher rates. The practitioner's choice reduces to a question about their workload: "what fraction of my agent's steps change the state?" If the answer is >30%, hex is the better zero-setup choice. If it is ≤10%, Morse delivers substantial additional savings. PM-1 does not claim universal superiority over hex or any other encoding — it claims a specific advantage in the low-change-rate regime, supported by measured crossover boundaries.
+
+**Three encodings, three tradeoffs.** The complete picture from this study is a three-way tradeoff:
+
+| Encoding | Best regime | Limitation |
+|----------|-------------|------------|
+| Codebook | Offline archival, few unique states | Two-pass, no streaming |
+| Hex | High change rates, any state width | No error detection, verbose at low change |
+| PM-1 Morse | Low change rates, streaming handoff | High per-byte cost at high change |
+| AB-1 Braille | Extension-equipped environments | Requires tokenizer extension |
+
+No single encoding dominates. The honest value of PM-1 is that it occupies a previously empty quadrant — streaming-first, zero-setup, error-resilient state communication — more than that it achieves any particular savings number.
+
+### 5.6 Security Considerations
 
 The 64KB maximum state size bounds memory allocation for untrusted frames. The Hamming [8,4,4] and parity error detection layers protect against single-bit inference errors in model outputs. However, adversarial inputs designed to exploit the protocol (e.g., injecting command frames into natural-language text) are out of scope for this work — PM-1 assumes a trusted transport between known agent instances.
 
