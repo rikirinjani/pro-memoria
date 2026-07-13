@@ -1,0 +1,24 @@
+name: Validate tools
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'self-harness/tools/*.py'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'self-harness/tools/*.py'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax check
+        run: |
+          python -c "import ast; ast.parse(open('self-harness/tools/validate_skills.py').read()); print('validate_skills: OK')"
+          python -c "import ast; ast.parse(open('self-harness/tools/bundle_web.py').read()); print('bundle_web: OK')"
