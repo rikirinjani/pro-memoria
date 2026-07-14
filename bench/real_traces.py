@@ -109,15 +109,35 @@ def trace_to_state(trace: dict, failures: dict) -> bytes:
     ])
 
 
+def _extract_trace(data: dict) -> dict | None:
+    """Extract a trace dict from .json or .pm1 payload."""
+    if "pm1_version" in data:
+        # .pm1 file: extract trace metadata from top-level fields
+        return {
+            "agent": data.get("agent", "other"),
+            "outcome": data.get("outcome", "unknown"),
+            "duration_s": data.get("duration_s", 0),
+            "tool_calls": data.get("tool_calls", 0),
+            "key_files": data.get("key_files", []),
+            "failure": data.get("failure", {}),
+            "validation": True,
+            "trace_id": data.get("session_id", data.get("slug", "?")),
+        }
+    # .json file: use as-is
+    return data
+
+
 def load_traces():
     """Load all real self-harness traces and failure records."""
     traces = []
-    files = sorted(TRACES_DIR.glob("*.json"))
+    files = sorted(TRACES_DIR.glob("*.json")) + sorted(TRACES_DIR.glob("*.pm1"))
     for f in files:
         try:
             with open(f, encoding="utf-8", errors="replace") as fh:
                 data = json.load(fh)
-            traces.append(data)
+            trace = _extract_trace(data)
+            if trace is not None:
+                traces.append(trace)
         except (json.JSONDecodeError, OSError):
             continue
 

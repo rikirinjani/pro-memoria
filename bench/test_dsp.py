@@ -1,6 +1,7 @@
 """Comprehensive DSP edge-case tests."""
 import sys
-sys.path.insert(0, r'C:\Users\think\morse')
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dsp import encode_diff, decode_diff, DiffState
 from core import roundtrip_check

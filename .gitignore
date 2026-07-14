@@ -8,6 +8,9 @@ ab1_repo/
 # Generated benchmark output
 bench/results/
 
+# Generated test artifacts
+opencode_plugin/verify_results.json
+
 # IDE / OS
 .vscode/
 .idea/
