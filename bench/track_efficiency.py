@@ -158,7 +158,7 @@ def print_trend(history: list[dict]) -> None:
     print(f"  Avg:     {sum(savings)/len(savings):.1f}%")
     if len(savings) >= 2:
         delta = last["savings_pct"] - first["savings_pct"]
-        arrow = "↑" if delta > 0 else ("↓" if delta < 0 else "→")
+        arrow = "+" if delta > 0 else ("-" if delta < 0 else "=")
         print(f"  Trend:   {arrow} {delta:+.1f}% from first snapshot")
     print(f"  History: {HISTORY_FILE}")
     print()
