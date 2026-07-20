@@ -8,6 +8,14 @@ ab1_repo/
 # Generated benchmark output
 bench/results/
 
+# Generated HTML reports (dashboard exports)
+*.report.html
+
+# Package build artifacts
+*.egg-info/
+build/
+dist/
+
 # Generated test artifacts
 opencode_plugin/verify_results.json
 

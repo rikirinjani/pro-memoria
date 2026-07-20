@@ -1,8 +1,43 @@
 # Pro Memoria
 
-**Single-agent state telemetry protocol.** Encodes 8-bit binary state as ASCII Morse (`.` for 0, `-` for 1) with differential emission, Hamming error correction, and handshake recovery. ~85% token savings vs delta-JSON on its design target.
+**Zero-setup agent state compression.** Cut state-tracking tokens 85–90% with plain ASCII `.` and `-` — no tokenizer extension, no config, no dependencies.
 
-`Pro Memoria` (Latin: *"for memory"*) is **not** a general log compressor — it's for **single-agent evolving state** where change between ticks is small and infrequent. Use it for agent session resume, cross-model handoff, pipe-safe agent communication, long-running monitors, and low-power edge agents. For multi-agent task logs (discrete unrelated events), use codebook or Base64 instead.
+```
+pip install pro-memoria
+```
+
+```python
+from pro_memoria import DiffState
+
+ds = DiffState()
+frame = ds.diff(b'\x00\x41\x00\x00\x00\x00\x00\x02')  # 8-char frame
+state = ds.state                                           # full state
+```
+
+In production: **89.4% savings** across 146 real agent traces (18,688 chars → 175,539 JSON bytes equivalent). On the AB-1 Crucible benchmark at 7% change: **84.8% savings** vs steelman JSON. [See benchmarks →](#benchmark-results)
+
+`Pro Memoria` (Latin: *"for memory"*) is **not** a general log compressor — it's for **single-agent evolving state** where change between ticks is small and infrequent. Use it for agent session resume, cross-model handoff, pipe-safe agent communication, long-running monitors, and low-power edge agents. Multi-agent task logs? Use codebook or Base64 instead.
+
+**Why `.` and `-`?** Every LLM tokenizer treats `.` and `-` as single tokens (`cl100k_base`, `o200k_base`, `p50k_base`, `r50k_base` — verified). That means PM-1 works **immediately** with any model, any provider, no setup. AB-1 (Braille) needs a tokenizer extension; hex and Base64 lose token density. PM-1 trades 8 chars/byte for universal portability.
+
+**Why zero deps?** Pure Python, ~750 lines, one file to read. Audit it, fork it, `pip install` it in 3 seconds.
+
+---
+
+## Live savings dashboard
+
+```
+pm1-trace audit --html report.html
+```
+
+Generates a self-contained HTML report with charts:
+
+[Open your own dashboard →](https://github.com/rikirinjani/pro-memoria#benchmark-results)
+
+Or run the demo:
+```
+python demo/react_integration.py --compare
+```
 
 ---
 
@@ -12,7 +47,7 @@ Pro memoria — "for memory" in Latin. Skip the routine, mark the transition.
 
 | Theater Rehearsal | Agent Session |
 |---|---|
-| "We'll do the anthem here" (skips singing) | `⠇` (skips verbose state JSON) |
+| "We'll do the anthem here" (skips singing) | Skips verbose state JSON |
 | Only rehearse scene transitions | Only emit state changes |
 | Everyone knows the routine | System knows the encoding |
 | Saves 2 hours of rehearsal time | Saves 92% of state-tracking tokens |
@@ -28,7 +63,7 @@ Every layer of PM-1 applies this same principle:
 | 8-byte topology | Full trace text, timestamps, file paths | Schema is shared at session start |
 | Completeness flag | Missing-fields noise | Schema tells us which fields exist |
 | Hamming ECC | Corruption re-send | Corrected in one step, no retransmission |
-| Hybrid AB-1 encoding | Morse overhead | Negoti­ated in handshake |
+| Hybrid AB-1 encoding | Morse overhead | Negotiated in handshake |
 
 Pro memoria is encoding what's new, trusting what's already there. The protocol's name is the design.
 
@@ -76,7 +111,8 @@ morse/
 ├── opencode_plugin/
 │   ├── adapter.py          PM1Session: record, flush, replay with Hamming ECC
 │   ├── failsafe.py         FailsafePM1: auto-disable on high error rate, failure logging
-│   ├── cli.py              pm1-trace CLI — one-shot trace recording and inspection
+│   ├── cli.py              pm1-trace CLI — recording, inspection, audit
+│   ├── dashboard.py         Savings dashboard HTML export (pm1-trace audit --html)
 │   └── verify_integration.py  33-test suite for real-trace roundtrip, ECC, disk corruption
 ├── bench/
 │   ├── token_efficiency.py     Multi-axis benchmark (hex, Base64, Morse, AB-1, JSON)
@@ -94,27 +130,42 @@ morse/
 ## Quick Start
 
 ```python
-from core import bits_to_morse, morse_to_bits
-from dsp import DiffState
+# pip install pro-memoria
+from pro_memoria import bits_to_morse, morse_to_bits, DiffState
 
 # Encode a byte
 morse = bits_to_morse(0x41)   # '.-.....-'
 byte = morse_to_bits(morse)   # 65
 
-# Track state changes
+# Track state changes (differential emission)
 ds = DiffState()
 ds.diff(b'\x41\x42')          # '0:.-.....-|1:.-....-.|'
 ds.diff(b'\x41\xFF')          # '1:--------|'
+```
+
+Or from a local clone (flat imports also work):
+
+```python
+from core import bits_to_morse, morse_to_bits
+from dsp import DiffState
 ```
 
 ---
 
 ## CLI Usage
 
-PM-1 ships with a command-line interface for one-shot trace recording:
+PM-1 ships with a command-line interface for trace recording, inspection, and audit:
 
 ```bash
+# Record a trace
 pm1-trace trace --agent <name> --outcome <pass|fail|partial|unknown> [options]
+
+# Inspect a trace
+pm1-trace info <path>
+
+# Aggregate savings dashboard
+pm1-trace audit
+pm1-trace audit --html report.html      # Interactive HTML with charts
 ```
 
 Common flags:
@@ -129,12 +180,6 @@ Common flags:
 ```
 
 Traces are written to `~/self-harness/traces/` as `.pm1` with Hamming [8,4,4] error correction, falling back to `.json` if encoding fails.
-
-Inspect a trace:
-
-```bash
-pm1-trace info <path>
-```
 
 ---
 

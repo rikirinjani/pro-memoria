@@ -189,6 +189,13 @@ def audit_cmd(args):
                 print(f"  [{enc}] {data['count']} files: {data['chars']} chars vs {data['json_bytes']} B ({p:.1f}%)")
 
     print(f"\n  Trace dir: {pm1_dir.resolve()}")
+
+    # Generate HTML dashboard if --html was given
+    if getattr(args, "html", None):
+        from opencode_plugin.dashboard import generate_html_report
+        html_path = generate_html_report(args.html)
+        print(f"  HTML report: {html_path}")
+
     return 0
 
 
@@ -215,6 +222,7 @@ def main():
 
     ap = sub.add_parser("audit", help="Scan all traces and show aggregate savings")
     ap.add_argument("--dir", default="", help="Trace directory (default: ~/self-harness/traces)")
+    ap.add_argument("--html", type=str, default="", help="Generate HTML dashboard report at PATH")
 
     args = parser.parse_args()
     if args.command == "trace":

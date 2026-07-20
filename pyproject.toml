@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pro-memoria"
+version = "0.1.0"
+description = "Single-agent state telemetry protocol — ASCII Morse encoding for token-efficient agent state"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.8"
+authors = [{name = "Riki", email = "rikirinjani@users.noreply.github.com"}]
+
+[project.urls]
+Homepage = "https://github.com/rikirinjani/pro-memoria"
+Repository = "https://github.com/rikirinjani/pro-memoria"
+
+[project.optional-dependencies]
+bench = ["tiktoken"]
+
+[project.scripts]
+pm1-trace = "pro_memoria.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pro_memoria*"]
