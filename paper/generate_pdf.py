@@ -98,7 +98,7 @@ pdf.ln(25)
 pdf.set_draw_color(30, 58, 95)
 pdf.set_fill_color(240, 244, 248)
 y0 = pdf.get_y()
-box_h = 62
+box_h = 95
 pdf.rect(pdf.l_margin, y0, pdf.w - 2*pdf.l_margin, box_h, style='DF')
 pdf.set_xy(pdf.l_margin + 5, y0 + 4)
 pdf.set_font('Times', 'B', 12)
@@ -113,18 +113,41 @@ abstract = (
     "state across multi-step tasks. Existing compact state representations either require tokenizer "
     "extensions (e.g., Agent Braille) or remain tied to JSON with modest compression. We present "
     "Pro Memoria (PM-1), an ASCII-native binary protocol that encodes 8-bit state as 8-character "
-    "Morse strings (.=0, -=1), combined with a Differential State Protocol (DSP) that emits only "
-    "changed bytes and a two-tier error-correcting command lexicon (Hamming [8,4,4] + parity). "
-    "Because . and - are unconditionally single tokens in every major tokenizer (cl100k_base, "
-    "o200k_base, p50k_base, r50k_base), PM-1 requires zero setup -- no vocabulary extension, no "
-    "Unicode registration, no configuration changes. On the AB-1 Crucible trace (1,417 states), "
-    "PM-1 achieves 84.8% token savings vs delta-encoded JSON. On 235 real agent traces (8-byte "
-    "state, 82.5% change rate), it achieves 60.8% savings. A sensitivity sweep across 1-128 byte "
-    "states and 10-90% change rates shows PM-1 beats hex by 1.4-2x at low change rates on "
-    "multi-byte states."
+    "Morse strings (. = 0, - = 1), combined with a Differential State Protocol (DSP) that emits only "
+    "changed bytes and a two-tier error-correcting command lexicon (Hamming [8,4,4] with single-error "
+    "correction and parity with single-error detection). Because . and - are unconditionally single "
+    "tokens in every major tokenizer (cl100k_base, o200k_base, p50k_base, r50k_base -- verified), "
+    "PM-1 requires zero setup: no vocabulary extension, no Unicode registration, no configuration changes."
 )
 pdf.multi_cell(pdf.w - 2*pdf.l_margin - 10, 5, abstract)
-pdf.ln(10)
+pdf.ln(2)
+pdf.set_font('Times', 'I', 10)
+pdf.set_text_color(30, 30, 30)
+abstract2 = (
+    "PM-1 occupies a specific point in the growing design space of machine-native communication: it "
+    "intentionally trades expressive power for deterministic decoding, compressing structured state "
+    "vectors with guaranteed bit-perfect recovery. On the AB-1 Crucible trace (1,417 single-byte "
+    "states), PM-1 achieves 84.8% token savings versus delta-encoded JSON (cl100k_base). On 157 real "
+    "agent self-harness traces (8-byte state vectors), live production measurements show 89.4% "
+    "aggregate byte savings. A sensitivity sweep across 1-128 byte states and 10-90% change rates "
+    "shows PM-1 beats hex by 1.4-2x at <=10% change rates on multi-byte states."
+)
+pdf.multi_cell(pdf.w - 2*pdf.l_margin - 10, 5, abstract2)
+pdf.ln(2)
+pdf.set_font('Times', '', 10)
+pdf.set_text_color(30, 30, 30)
+abstract3 = (
+    "We formalize PM-1's design as a set of five executable protocol invariants (ASCII-only, "
+    "normalization-safe, bijective, deterministic, tokenizer-independent) enforced by a test suite "
+    "that fails the build if any invariant is violated. The protocol is implemented in ~750 lines of "
+    "pure Python with zero dependencies, a documented 7-state protocol machine, and a canonical "
+    "specification. A case study in protocol design -- the evolution from an initial "
+    "diacritic-as-state-marker hypothesis through empirical rejection to a clean architectural "
+    "separation (encoding != rendering) -- illustrates how executable invariants prevent silent "
+    "degradation as a protocol matures."
+)
+pdf.multi_cell(pdf.w - 2*pdf.l_margin - 10, 5, abstract3)
+pdf.ln(6)
 
 # ── 1. Introduction ────────────────────────────────────────────────────
 pdf.add_page()
@@ -186,7 +209,19 @@ pdf.body_text(
     "ASCII Morse -- trading density (8 chars/byte vs 1 cell/state) for portability (no extension needed)."
 )
 
-pdf.subsection_title('2.2 Existing Compact Encodings')
+pdf.subsection_title('2.2 BabelTele')
+pdf.body_text(
+    "BabelTele [Zhu et al., 2026] investigates whether semantic information can be encoded "
+    "in compact, non-standard textual forms that sacrifice human readability while remaining "
+    "recoverable by LLMs. It demonstrates 99.5% semantic fidelity from text condensed to "
+    "27.9% of its original length. BabelTele and PM-1 occupy complementary positions: "
+    "BabelTele targets arbitrary natural language with semantic (lossy) recovery, while PM-1 "
+    "targets fixed-schema structured state with deterministic (lossless) recovery guaranteed "
+    "by mathematical encoding. These are not competing approaches; they address fundamentally "
+    "different communication tasks within the same emerging design space."
+)
+
+pdf.subsection_title('2.3 Existing Compact Encodings')
 pdf.body_text(
     "Hex encoding (2 chars/byte) and Base64 (4 chars per 3 bytes, approximately 1.33x overhead) "
     "are both ASCII-native and zero-setup. Hex is the simplest baseline at 16 tokens per byte. "
@@ -194,6 +229,37 @@ pdf.body_text(
     "in our benchmarks. Prior work on state delta trajectories (latent-space deltas), A2A (agent-to-agent "
     "transport), and MCP (Model Context Protocol) addresses different parts of the agent communication "
     "stack. PM-1 is orthogonal to these: it compresses the state representation that travels over any transport."
+)
+
+pdf.subsection_title('2.4 Hybrid Morse-Braille Encoding')
+pdf.body_text(
+    "PM-1 and AB-1 are not competing protocols -- they occupy complementary positions in the "
+    "same stack. PM-1 Morse is the universal bootstrap: zero setup, guaranteed to work in any "
+    "LLM environment. AB-1 Braille is the density upgrade: once the handshake confirms both "
+    "sides support the tokenizer extension, ongoing DATA-phase communication can use Braille "
+    "cells. The protocol handshake with ENCODING/ENCODING_ACK commands negotiates a shared "
+    "encoding: the initiator advertises {morse, braille} and the responder selects the best "
+    "common option. On error recovery, the encoder resets to Morse. The HybridEncoder class "
+    "implements both encodings without external dependencies."
+)
+
+pdf.subsection_title('2.5 Design Space')
+pdf.body_text(
+    "Figure 6 positions PM-1 among related systems on two axes: Target Domain (Structured "
+    "State to Natural Language) and Recovery Guarantee (Exact to Semantic). PM-1 and AB-1 "
+    "occupy the top-left quadrant (structured state, exact recovery). BabelTele occupies the "
+    "bottom-right (natural language, semantic recovery). Hex and Base64 are baseline "
+    "deterministic encodings; Codebook requires two-pass scanning. This positioning clarifies "
+    "that PM-1's contribution is deterministic state transport in a quadrant previously "
+    "occupied only by AB-1 (with its tokenizer-extension requirement) and hex/Base64 "
+    "(with no differential emission). "
+    "A third implicit axis -- Failure Semantics -- further distinguishes these systems: "
+    "PM-1 is fail-stop (corruption detected, system halts), while BabelTele is fail-soft "
+    "(corruption absorbed, system continues with approximate output). Neither is universally "
+    "better; they are designed for different risk tolerances. This distinction maps to the "
+    "systems engineering concepts of reliability (how often is output correct?) versus "
+    "integrity (when output is wrong, will the system know?). PM-1 optimizes integrity; "
+    "BabelTele optimizes reliability."
 )
 
 # ── 3. Methods ─────────────────────────────────────────────────────────
@@ -210,7 +276,19 @@ pdf.body_text(
     "single-token encodings because they appear frequently as isolated characters."
 )
 
-pdf.subsection_title('3.2 Differential State Protocol')
+pdf.subsection_title('3.2 Protocol Invariants')
+pdf.body_text(
+    "PM-1's design is formalized as five executable invariants verified by the test suite "
+    "in core.py:invariant_check(). I1: ASCII-only -- every alphabet symbol is ASCII. "
+    "I2: Normalization-safe -- NFC and NFKC normalization does not change any symbol. "
+    "I3: Bijective -- decode(encode(byte)) == byte for all 256 values. "
+    "I4: Deterministic -- same input always produces same output. "
+    "I5: Tokenizer-independent -- token count is predictable across all LLM tokenizers. "
+    "These invariants are enforceable, not aspirational: if a future edit adds a character "
+    "that fails I2, the test suite catches it before it reaches production."
+)
+
+pdf.subsection_title('3.3 Differential State Protocol')
 pdf.body_text(
     "The DSP emits a diff frame containing only the byte positions that changed between consecutive "
     "states, plus an index for each changed byte: <index>:<8-morse-chars>|<index>:<8-morse-chars>|... "
@@ -221,7 +299,7 @@ pdf.body_text(
     "allocations and provides a DoS guard."
 )
 
-pdf.subsection_title('3.3 Lexicon and Error Correction')
+pdf.subsection_title('3.4 Lexicon and Error Correction')
 pdf.body_text(
     "PM-1 defines two command tiers that share the same 8-bit encoding space. Tier 1 -- Hamming "
     "[8,4,4] provides 16 commands (NOP, ACK, NAK, RESET, SYNC, REQ, DATA, EOF, ERR, RETRY, STATUS, "
@@ -232,7 +310,7 @@ pdf.body_text(
     "specification -- auto-detection is not supported."
 )
 
-pdf.subsection_title('3.4 Protocol State Machine')
+pdf.subsection_title('3.5 Protocol State Machine')
 pdf.body_text(
     "PM-1 defines a 7-state connection lifecycle: CLOSED, HANDSHAKE (version negotiation), SYNCING "
     "(full state synchronization), DATA (normal operation with diffs), ERROR (recoverable error), "
@@ -245,7 +323,7 @@ pdf.insert_figure(HERE / "fig3_statemachine.png",
                   "Figure 3: PM-1 Protocol State Machine -- 7 states with defined transition paths and handshake/recovery sequences.",
                   w=150)
 
-pdf.subsection_title('3.5 Benchmark Methodology')
+pdf.subsection_title('3.6 Benchmark Methodology')
 pdf.body_text(
     "We evaluate on two datasets. The AB-1 Crucible trace consists of 1,417 single-byte state "
     "snapshots from AB-1's benchmark suite (6 unique masks, 52.8% emit ratio). Real self-harness "
@@ -255,6 +333,20 @@ pdf.body_text(
     "states for sensitivity analysis: 500-step sequences at byte widths of 1, 8, 32, and 128, "
     "at change rates of 10%, 30%, 50%, 70%, and 90%. All token counts use tiktoken and are "
     "reported for both cl100k_base (GPT-4/GPT-4o) and o200k_base (Claude)."
+)
+
+pdf.subsection_title('3.8 Separation of Concerns: A Design Case Study')
+pdf.body_text(
+    "An instructive episode illustrates the value of executable invariants. An initial "
+    "hypothesis proposed using PM-1's '.' and '-' as diacritical marks on Unicode characters, "
+    "so that identical base symbols carry different machine state. Empirical testing revealed "
+    "two failures: (1) combining marks increase token count, negating the zero-setup "
+    "advantage; (2) NFC normalization silently merges combining marks into precomposed "
+    "characters -- the bit information is destroyed with no error signal, occurring before "
+    "PM-1's Hamming ECC layer sees the bytes. The resolution was architectural separation: "
+    "encoding and rendering occupy distinct layers, and PM-View (rendering) must never feed "
+    "back into PM-1 (encoding). Invariant I2 now enforces this: any future proposal to "
+    "extend the PM-1 alphabet must survive NFC/NFKC normalization or be rejected."
 )
 
 # ── 4. Results ─────────────────────────────────────────────────────────
@@ -310,7 +402,20 @@ pdf.body_text(
     "when nearly every byte changes."
 )
 
-pdf.subsection_title('4.5 End-to-End ReAct Integration')
+pdf.insert_figure(HERE / "fig6_design_space.png",
+                  "Figure 6: Design Space Map -- PM-1 positioned among BabelTele, AB-1, Codebook, Hex, and Delta JSON on axes of Target Domain and Recovery Guarantee.",
+                  w=150)
+
+pdf.subsection_title('4.5 Design Space Map')
+pdf.body_text(
+    "Figure 6 positions PM-1 within the broader machine-native communication landscape. "
+    "PM-1 and AB-1 cluster in the top-left quadrant (structured state, exact recovery). "
+    "BabelTele occupies the bottom-right (natural language, semantic recovery). The empty "
+    "top-right quadrant (natural language with exact recovery) remains an open research "
+    "question."
+)
+
+pdf.subsection_title('4.6 End-to-End ReAct Integration')
 pdf.body_text(
     "A simulated ReAct handoff scenario (orchestrator -> fixer -> oracle, 10 handoffs, 8-byte agent "
     "state) demonstrated PM-1 in a realistic agent loop: approximately 520 PM-1 characters vs 1,025 "
@@ -349,14 +454,43 @@ pdf.body_text(
     "universal portability."
 )
 
-pdf.subsection_title('5.3 Limitations')
+pdf.subsection_title('5.3 Reliability vs. Integrity: Why Guarantees Matter at Failure')
+pdf.body_text(
+    "A systems engineering principle applies: most approaches are indistinguishable when they "
+    "work; you learn what they really are when they fail. PM-1 and BabelTele appear identical "
+    "during normal operation -- compact transport, semantic expansion, correct output. The "
+    "difference emerges at the failure boundary. We distinguish two objectives: Reliability "
+    "(how often is the output correct? BabelTele achieves 99.5% semantic fidelity on natural "
+    "language) and Integrity (when output is wrong, will the system know? PM-1 guarantees this "
+    "through Hamming ECC: single-bit errors corrected, double-bit errors detected and flagged). "
+    "In fault-tolerant system terms, PM-1 is fail-stop (corruption detected, system halts) "
+    "while BabelTele is fail-soft (corruption absorbed, system continues with approximate "
+    "output). By domain: NPC mood in a game tolerates fail-soft ('Happy' to 'Content' is "
+    "invisible); medication dosage requires fail-stop ('Warfarin 10mg' to 'Warfarin 1mg' is "
+    "catastrophic). This is not a claim that PM-1 is better -- it is a claim that they optimize "
+    "different design objectives. The choice reduces to: what kind of failure can your "
+    "application tolerate?"
+)
+
+pdf.subsection_title('5.4 The Invariants Methodology')
+pdf.body_text(
+    "A recurring theme in PM-1's development has been the gap between documented properties "
+    "and enforced properties. Early versions claimed to be normalization-safe because ASCII "
+    "happens to be stable. The diacritic case study showed this was true by accident, not "
+    "by design. The five invariants close this gap: each is executable and checked on every "
+    "build. If a future contributor adds a character to the PM-1 alphabet, I2 catches it. "
+    "If the encoding algorithm changes, I3 catches it. This methodology -- documented "
+    "properties that CI can verify -- is applicable beyond PM-1."
+)
+
+pdf.subsection_title('5.5 Limitations')
 pdf.bullet("Single-benchmark scope: the Crucible trace is from AB-1's ecosystem, though our 235-trace real dataset partially addresses this.")
 pdf.bullet("No trained embedding: PM-1 tokens have no learned semantics for the model -- they are opaque state identifiers.")
 pdf.bullet("Human-unfriendly: designed for machine-to-machine communication; debugging requires a separate rendering layer.")
 pdf.bullet("Unicode tokenizers not tested: SentencePiece-based models (Gemma, Llama-1/2) tokenize ASCII differently from tiktoken.")
 pdf.ln(3)
 
-pdf.subsection_title('5.4 Security Considerations')
+pdf.subsection_title('5.7 Security Considerations')
 pdf.body_text(
     "The 64 KB maximum state size bounds memory allocation for untrusted frames. The Hamming "
     "[8,4,4] and parity error detection layers protect against single-bit inference errors in "
@@ -365,24 +499,45 @@ pdf.body_text(
     "between known agent instances."
 )
 
+pdf.subsection_title('5.8 Use Cases and the Adapter Pattern')
+pdf.body_text(
+    "PM-1 supports two primary deployment patterns. Edge-to-Cloud Relay: an edge agent with "
+    "a tight token budget encodes state as a PM-1 frame; at the cloud endpoint, a domain-"
+    "specific adapter expands it into natural language for an LLM with an abundant context "
+    "window. PM-1 saves bandwidth on the constrained leg only. Multi-Agent State Bus: multiple "
+    "agents exchange only PM-1 frames -- compact and zero-parse -- with no English internally; "
+    "only the human-facing dashboard runs the adapter. This is analogous to routers exchanging "
+    "IP packets, not HTML. Adapters are domain-specific consumers of PM-1, not part of the "
+    "protocol. The PM-1 repository ships a single example adapter demonstrating the pattern; "
+    "application-specific adapters are maintained as separate packages."
+)
+
 # ── 6. Conclusion ─────────────────────────────────────────────────────
 pdf.section_title('6. Conclusion')
 
 pdf.body_text(
-    "We presented Pro Memoria (PM-1), an ASCII-native binary protocol for token-efficient agent "
-    "state communication. By encoding 8-bit state as 8-character Morse strings and combining this "
-    "with a differential state protocol and a two-tier error-correcting lexicon, PM-1 achieves "
-    "60-85% token savings versus delta-encoded JSON with zero setup -- no tokenizer extension, "
-    "no Unicode registration, no configuration changes. The protocol is fully implemented "
-    "(approximately 750 lines of Python), verified with exhaustive tests (256-byte roundtrip, "
-    "128/128 single-error Hamming corrections, 448/448 double-error detections, 56 DSP edge "
-    "cases), and benchmarked on both synthetic and real agent traces."
+    "We presented Pro Memoria (PM-1), an ASCII-native binary protocol for token-efficient "
+    "agent state communication achieving 60-89% token savings with zero setup. PM-1 occupies "
+    "a specific point in the growing design space of machine-native communication: structured "
+    "state with deterministic recovery, trading expressive power for guaranteed correctness. "
+    "It is not a replacement for AB-1 (denser with extension) or BabelTele (arbitrary text "
+    "with semantic recovery), but fills the gap where neither a tokenizer extension can be "
+    "installed nor lossy recovery is acceptable."
 )
 
 pdf.body_text(
-    "PM-1 is not a replacement for AB-1 Braille, which achieves superior density through its "
-    "tokenizer extension. Rather, PM-1 fills the gap for environments where an extension cannot "
-    "be installed but token-efficient state communication is still required."
+    "The protocol invariants methodology -- five enforceable properties verified on every "
+    "build -- represents a secondary contribution. This methodology is applicable beyond "
+    "PM-1: documented properties that CI can verify, rather than prose claims that happen "
+    "to be true today. The specification, test vectors, and executable invariants are "
+    "available as PROTOCOL.md and core.py:invariant_check() in the repository."
+)
+
+pdf.body_text(
+    "Future work includes evaluating additional tokenizer families (SentencePiece-based "
+    "models such as Gemma and Llama), accumulating larger real-world traces across diverse "
+    "agent systems, and independent third-party implementations to validate the protocol's "
+    "claims outside its reference codebase."
 )
 
 pdf.body_text(
@@ -396,12 +551,13 @@ pdf.section_title('References')
 
 refs = [
     "[1] Tetrahedroned. Agent Braille (AB-1): A Unicode-Based Protocol for Machine-to-Machine State Communication. 2025. github.com/Tetrahedroned/Agent-Braille",
-    "[2] Yao, S. et al. ReAct: Synergizing Reasoning and Acting in Language Models. ICLR, 2023.",
-    "[3] Brown, T. et al. Language Models are Few-Shot Learners. NeurIPS, 2020.",
-    "[4] Google. Model Context Protocol (MCP). 2024. github.com/modelcontextprotocol",
-    "[5] Google. Agent-to-Agent (A2A) Protocol. 2025. github.com/google/A2A",
-    "[6] Sennrich, R. et al. Neural Machine Translation of Rare Words with Subword Units. ACL, 2016.",
-    "[7] Hamming, R. W. Error Detecting and Error Correcting Codes. Bell System Technical Journal, 1950.",
+    "[2] Zhu, J. et al. BabelTele: A Probe into Model-Centric Textual Representations for Large Language Models. arXiv:2606.19857, 2026.",
+    "[3] Yao, S. et al. ReAct: Synergizing Reasoning and Acting in Language Models. ICLR, 2023.",
+    "[4] Brown, T. et al. Language Models are Few-Shot Learners. NeurIPS, 2020.",
+    "[5] Google. Model Context Protocol (MCP). 2024. github.com/modelcontextprotocol",
+    "[6] Google. Agent-to-Agent (A2A) Protocol. 2025. github.com/google/A2A",
+    "[7] Sennrich, R. et al. Neural Machine Translation of Rare Words with Subword Units. ACL, 2016.",
+    "[8] Hamming, R. W. Error Detecting and Error Correcting Codes. Bell System Technical Journal, 1950.",
 ]
 
 pdf.set_font('Times', '', 10)
