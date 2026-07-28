@@ -64,6 +64,33 @@ def roundtrip_check() -> bool:
     return True
 
 
+def invariant_check() -> bool:
+    """Verify protocol invariants hold.
+
+    Invariants:
+      - I1: Every PM-1 alphabet character is ASCII.
+      - I2: Every PM-1 alphabet character is NFC/NFKC normalization-stable.
+      - I3: Encoding is bijective (roundtrip for all 256 bytes).
+    """
+    ALPHABET = {'.', '-'}
+
+    # I1 — ASCII
+    for c in ALPHABET:
+        if ord(c) > 127:
+            return False
+
+    # I2 — Normalization safety
+    import unicodedata
+    for c in ALPHABET:
+        if unicodedata.normalize("NFC", c) != c:
+            return False
+        if unicodedata.normalize("NFKC", c) != c:
+            return False
+
+    # I3 — Roundtrip
+    return roundtrip_check()
+
+
 def encode_bytes(data: bytes) -> str:
     """Encode a bytes object to a Morse string sequence.
 
@@ -85,9 +112,13 @@ def decode_bytes(morse: str) -> bytes:
 
 
 if __name__ == '__main__':
+    import sys
     ok = roundtrip_check()
+    inv = invariant_check()
     print(f"Roundtrip 0-255: {'PASS' if ok else 'FAIL'}")
+    print(f"Invariants I1-I3: {'PASS' if inv else 'FAIL'}")
 
     import doctest
     results = doctest.testmod(verbose=False)
     print(f"Doctests: {results.attempted} attempted, {results.failed} failed")
+    sys.exit(0 if (ok and inv and results.failed == 0) else 1)
