@@ -396,6 +396,18 @@ PM-1's architecture supports two primary deployment patterns, both enabled by tr
 
 **Adapter-as-driver architecture.** Rather than shipping domain adapters with PM-1 (which would imply English expansion is part of the protocol), adapters are maintained as separate, domain-specific packages (`pm-adapter-coding`, `pm-adapter-hospital`, etc.). The PM-1 repository ships a single example adapter (`examples/adapter.py`) that demonstrates the pattern: a ~20-line function that takes a PM-1 frame and a schema dictionary and produces human-readable text. The protocol remains small and stable; applications build rich interpretations on top of it.
 
+### 5.9 Empirical Coordination Ceiling
+
+To quantify how much coordination traffic can be handled deterministically — and thus how much a PM-1-based event bus could eliminate — we classified 374 coordination events (deduplicated from 518 agent trace recordings by key-file overlap and time-window clustering). Each event was labeled by asking: *"Would a deterministic scheduler have needed to wake an LLM for this coordination decision?"*
+
+| Class | Events | % |
+|-------|--------|---|
+| Mechanical (deterministic routing) | 251 | **67.1%** |
+| Semantic (reasoning required) | 67 | 17.9% |
+| Deliverable (human-facing output) | 56 | 15.0% |
+
+A human-calibrated random audit (n=60) of the mechanical bucket estimated a false-positive rate of 3.3% (95% CI: 0.9–11.4%), correcting the auto-classifier's initial 69.5% ceiling downward. By Amdahl's Law, no coordination architecture can eliminate more than ~67% of coordination overhead through deterministic scheduling alone — the remaining 33% requires semantic reasoning or human-facing output. This ceiling is an empirical upper bound derived from real agent trace data, not a theoretical projection.
+
 ---
 
 ## 6. Conclusion

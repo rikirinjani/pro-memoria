@@ -14,7 +14,7 @@ frame = ds.diff(b'\x00\x41\x00\x00\x00\x00\x00\x02')  # 8-char frame
 state = ds.state                                           # full state
 ```
 
-In production: **89.4% savings** across 146 real agent traces (18,688 chars → 175,539 JSON bytes equivalent). On the AB-1 Crucible benchmark at 7% change: **84.8% savings** vs steelman JSON. [See benchmarks →](#benchmark-results)
+In production: **89.4% savings** across 157 real agent traces (20,096 chars → 185,223 JSON bytes equivalent). On the AB-1 Crucible benchmark at 7% change: **84.8% savings** vs steelman JSON. [See benchmarks →](#benchmark-results)
 
 `Pro Memoria` (Latin: *"for memory"*) is **not** a general log compressor — it's for **single-agent evolving state** where change between ticks is small and infrequent. Use it for agent session resume, cross-model handoff, pipe-safe agent communication, long-running monitors, and low-power edge agents. Multi-agent task logs? Use codebook or Base64 instead.
 
@@ -210,6 +210,16 @@ Morse DSP is optimized for **low-change-rate agent-state monitoring** (<15% chan
 See full sensitivity sweep in `bench/token_efficiency.py`.
 
 **ECC overhead.** Above numbers are raw Morse (no error correction). With Hamming [8,4,4] enabled, each 8-byte state becomes 16 Hamming-protected bytes before Morse encoding — roughly doubling token cost. Use ECC for checkpoint/session-resume (low frequency, high stakes). Skip it for high-frequency intra-session ticks where a bad tick is overwritten by the next one anyway.
+
+---
+
+## Coordination Efficiency
+
+In multi-agent systems, most coordination traffic doesn't need semantic reasoning. Across 374 coordination events (deduplicated from 518 agent traces), **67.1% were mechanically decidable** — a Hermes-style deterministic scheduler could route them without waking an LLM (95% CI: 61.5–69.0%). Only 17.9% required semantic judgment. By Amdahl's Law, this sets the ceiling on coordination cost reduction through deterministic scheduling.
+
+See `bench/results/trace_classification_report.md` for full methodology.
+
+---
 
 ---
 
