@@ -10,25 +10,17 @@ Quick start:
     '.-.....-'
 """
 
-import sys
-from pathlib import Path
-
-_HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parent
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
-
 # ── Phase 1: Core bits <-> Morse ──────────────────────────────────────
-from core import bits_to_morse, morse_to_bits, encode_bytes, decode_bytes
+from .core import bits_to_morse, morse_to_bits, encode_bytes, decode_bytes
 
 # ── Phase 2: Differential State Protocol ──────────────────────────────
-from dsp import DiffState, encode_diff, decode_diff
+from .dsp import DiffState, encode_diff, decode_diff
 
 # ── Phase 3: Lexicon (Hamming + Parity commands) ──────────────────────
-from lexicon import hamming_encode, hamming_decode, parity_encode, parity_decode
+from .lexicon import hamming_encode, hamming_decode, parity_encode, parity_decode
 
 # ── Hybrid encoder (Morse / Braille) ──────────────────────────────────
-from hybrid import ENCODING_MORSE, ENCODING_BRAILLE, HybridEncoder
+from .hybrid import ENCODING_MORSE, ENCODING_BRAILLE, HybridEncoder
 
 __all__ = [
     # core

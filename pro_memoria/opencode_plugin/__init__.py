@@ -1,5 +1,6 @@
-"""PM-1 OpenCode plugin — adapter, failsafe, and CLI.
+"""PM-1 OpenCode plugin — adapter, failsafe, dashboard, and CLI.
 
-The actual plugin code lives in the root-level `opencode_plugin/` directory.
-This package marker enables `pip install -e .` discovery.
+The plugin code is bundled inside this package (mirrors of the root-level
+``opencode_plugin/`` modules, with relative imports) so the ``pm1-trace``
+console script works from an installed wheel.
 """

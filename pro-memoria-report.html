@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM-1 Efficiency Report</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; color: #2d3436; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%); color: #fff; padding: 32px 40px; }
+.header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+.header .subtitle { font-size: 14px; color: #95a5a6; margin-top: 6px; }
+.header .subtitle span { color: #bdc3c7; }
+.header .meta { margin-top: 12px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 20px; }
+.header .meta-item { color: #ecf0f1; }
+.header .meta-item strong { color: #f1c40f; }
+
+/* Container */
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+/* Summary Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #7f8c8d; margin-bottom: 6px; }
+.card .value { font-size: 28px; font-weight: 700; }
+.card .value.green { color: #27ae60; }
+.card .value.blue { color: #2980b9; }
+.card .value.orange { color: #e67e22; }
+.card .value.purple { color: #8e44ad; }
+
+/* Chart Grid */
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+@media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
+.chart-box { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.chart-box h3 { font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 10px; }
+.chart-canvas { width: 100%; height: 320px; }
+
+/* Table */
+.table-wrap { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow-x: auto; margin-bottom: 24px; }
+.table-wrap h3 { font-size: 14px; font-weight: 600; color: #2c3e50; margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: #f8f9fa; }
+th { text-align: left; padding: 10px 12px; font-weight: 600; color: #2c3e50; border-bottom: 2px solid #eee; white-space: nowrap; cursor: pointer; user-select: none; }
+th:hover { color: #2980b9; }
+th.sort-asc::after { content: " \25B2"; font-size: 10px; }
+th.sort-desc::after { content: " \25BC"; font-size: 10px; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+tr:hover { background: #fafbfc; }
+td.mono { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 12px; }
+tr.json-row { color: #95a5a6; font-style: italic; }
+
+/* Footer */
+.footer { text-align: center; padding: 20px; font-size: 12px; color: #95a5a6; }
+
+/* Savings badge */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge.save { background: #d5f5e3; color: #1e8449; }
+.badge.over { background: #fdebd0; color: #b7950b; }
+.badge.none { background: #ebedef; color: #717d7e; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PM-1 Efficiency Report</h1>
+  <div class="subtitle">Generated: <span>2026-07-20 11:10:29</span> &middot; C:\Users\think\self-harness\traces</div>
+  <div class="meta">
+    <div class="meta-item">Total traces: <strong>166</strong></div>
+    <div class="meta-item">PM-1: <strong>161</strong></div>
+    <div class="meta-item">JSON (fallback): <strong>5</strong></div>
+    <div class="meta-item">Active agents: <strong>7</strong></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="label">Total Trace Files</div>
+      <div class="value blue">166</div>
+    </div>
+    <div class="card">
+      <div class="label">PM-1 Characters</div>
+      <div class="value orange">20,608</div>
+    </div>
+    <div class="card">
+      <div class="label">JSON Bytes Saved</div>
+      <div class="value green">173,187</div>
+    </div>
+    <div class="card">
+      <div class="label">Overall Savings</div>
+      <div class="value purple">89.4%</div>
+    </div>
+  </div>
+
+  <!-- Chart Row 1: Savings over time + Per-agent breakdown -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Savings Over Time (daily)</h3>
+      <div id="chart-timeseries" class="chart-canvas"></div>
+    </div>
+    <div class="chart-box">
+      <h3>Per-Agent Savings</h3>
+      <div id="chart-agents" class="chart-canvas"></div>
+    </div>
+  </div>
+
+  <!-- Chart Row 2: Encoding distribution + Top saving traces -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Encoding Distribution</h3>
+      <div id="chart-encoding" class="chart-canvas"></div>
+    </div>
+    <div class="chart-box">
+      <h3>Top Saving Traces</h3>
+      <div id="chart-topsavers" class="chart-canvas"></div>
+    </div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="table-wrap">
+    <h3>All Traces</h3>
+    <table id="trace-table">
+      <thead>
+        <tr>
+          <th data-col="filename">Filename</th>
+          <th data-col="date">Date</th>
+          <th data-col="agent">Agent</th>
+          <th data-col="encoding">Encoding</th>
+          <th data-col="json_bytes" class="mono-col">JSON Bytes</th>
+          <th data-col="savings_pct" class="mono-col">Savings %</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr><td class="mono">20260714T210011-coordinator-cli.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">881</td><td><span class="badge save">85.5%</span></td></tr>
+<tr><td class="mono">20260714T233557-coordinator-cli.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">911</td><td><span class="badge save">85.9%</span></td></tr>
+<tr><td class="mono">20260715T013956-coordinator-cli.pm1</td><td>2026-07-15</td><td>coordinator</td><td>morse</td><td class="mono">895</td><td><span class="badge save">85.7%</span></td></tr>
+<tr><td class="mono">20260715T014242-orchestrator-cli.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">811</td><td><span class="badge save">84.2%</span></td></tr>
+<tr><td class="mono">20260715T053650-designer-cli.pm1</td><td>2026-07-15</td><td>designer</td><td>morse</td><td class="mono">947</td><td><span class="badge save">86.5%</span></td></tr>
+<tr><td class="mono">20260715T075351-orchestrator-cli.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">778</td><td><span class="badge save">83.5%</span></td></tr>
+<tr><td class="mono">20260715T080228-orchestrator-cli.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">765</td><td><span class="badge save">83.3%</span></td></tr>
+<tr><td class="mono">20260715T204702-coordinator-cli.pm1</td><td>2026-07-15</td><td>coordinator</td><td>morse</td><td class="mono">843</td><td><span class="badge save">84.8%</span></td></tr>
+<tr><td class="mono">20260716T034841-fixer-cli.pm1</td><td>2026-07-16</td><td>fixer</td><td>morse</td><td class="mono">1009</td><td><span class="badge save">87.3%</span></td></tr>
+<tr><td class="mono">20260717T091110-coordinator-cli.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">713</td><td><span class="badge save">82.0%</span></td></tr>
+<tr><td class="mono">20260718T201703-coordinator-cli.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">862</td><td><span class="badge save">85.2%</span></td></tr>
+<tr><td class="mono">20260719T204009-coordinator-cli.pm1</td><td>2026-07-19</td><td>coordinator</td><td>morse</td><td class="mono">899</td><td><span class="badge save">85.8%</span></td></tr>
+<tr><td class="mono">20260720T033551-fixer-cli.pm1</td><td>2026-07-20</td><td>fixer</td><td>morse</td><td class="mono">965</td><td><span class="badge save">86.7%</span></td></tr>
+<tr><td class="mono">20260720T034202-fixer-cli.pm1</td><td>2026-07-20</td><td>fixer</td><td>morse</td><td class="mono">789</td><td><span class="badge save">83.8%</span></td></tr>
+<tr><td class="mono">add-deepseek-key-macbook.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">674</td><td><span class="badge save">81.0%</span></td></tr>
+<tr><td class="mono">analyst-verify.pm1</td><td>2026-07-18</td><td>orchestrator</td><td>morse</td><td class="mono">904</td><td><span class="badge save">85.8%</span></td></tr>
+<tr><td class="mono">bei1persen-analysis.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">740</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">bonsai-frontier-comparison.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">691</td><td><span class="badge save">81.5%</span></td></tr>
+<tr><td class="mono">bonsai-image-install.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">741</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">bonsai-opencode-provider.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">749</td><td><span class="badge save">82.9%</span></td></tr>
+<tr><td class="mono">chatbot-bridge.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">557</td><td><span class="badge save">77.0%</span></td></tr>
+<tr><td class="mono">chatbot-hf-parser-space.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">571</td><td><span class="badge save">77.6%</span></td></tr>
+<tr><td class="mono">chatbot-whatsapp-sidecar.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">576</td><td><span class="badge save">77.8%</span></td></tr>
+<tr><td class="mono">crashlog-built.pm1</td><td>2026-07-19</td><td>coordinator</td><td>morse</td><td class="mono">702</td><td><span class="badge save">81.8%</span></td></tr>
+<tr><td class="mono">create-dqf-folder.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">682</td><td><span class="badge save">81.2%</span></td></tr>
+<tr><td class="mono">dashboard-backend.pm1</td><td>2026-07-15</td><td>fixer</td><td>morse</td><td class="mono">684</td><td><span class="badge save">81.3%</span></td></tr>
+<tr><td class="mono">dashboard-launch.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">708</td><td><span class="badge save">81.9%</span></td></tr>
+<tr><td class="mono">dashboard-remove-constant-col.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">795</td><td><span class="badge save">83.9%</span></td></tr>
+<tr><td class="mono">dashboard-template.pm1</td><td>2026-07-15</td><td>designer</td><td>morse</td><td class="mono">741</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">day10-publish.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">663</td><td><span class="badge save">80.7%</span></td></tr>
+<tr><td class="mono">day11-publish.pm1</td><td>2026-07-19</td><td>coordinator</td><td>morse</td><td class="mono">664</td><td><span class="badge save">80.7%</span></td></tr>
+<tr><td class="mono">day9-publish.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">569</td><td><span class="badge save">77.5%</span></td></tr>
+<tr><td class="mono">designer-alerts-tab.pm1</td><td>2026-07-15</td><td>designer</td><td>morse</td><td class="mono">869</td><td><span class="badge save">85.3%</span></td></tr>
+<tr><td class="mono">discovery-module.pm1</td><td>2026-07-15</td><td>fixer</td><td>morse</td><td class="mono">683</td><td><span class="badge save">81.3%</span></td></tr>
+<tr><td class="mono">dqf-copy-agents.pm1</td><td>2026-07-17</td><td>orchestrator</td><td>morse</td><td class="mono">663</td><td><span class="badge save">80.7%</span></td></tr>
+<tr><td class="mono">dqf-dashboard.pm1</td><td>2026-07-17</td><td>designer</td><td>morse</td><td class="mono">849</td><td><span class="badge save">84.9%</span></td></tr>
+<tr><td class="mono">dqf-four-items.pm1</td><td>2026-07-17</td><td>orchestrator</td><td>morse</td><td class="mono">1088</td><td><span class="badge save">88.2%</span></td></tr>
+<tr><td class="mono">dqf-macmini-analysis.pm1</td><td>2026-07-17</td><td>orchestrator</td><td>morse</td><td class="mono">1082</td><td><span class="badge save">88.2%</span></td></tr>
+<tr><td class="mono">dqf-macmini-check.pm1</td><td>2026-07-17</td><td>orchestrator</td><td>morse</td><td class="mono">711</td><td><span class="badge save">82.0%</span></td></tr>
+<tr><td class="mono">dqf-pdf-build.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">783</td><td><span class="badge save">83.7%</span></td></tr>
+<tr><td class="mono">dqf-poc-complete.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">1260</td><td><span class="badge save">89.8%</span></td></tr>
+<tr><td class="mono">dqf-publication-readiness.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">1381</td><td><span class="badge save">90.7%</span></td></tr>
+<tr><td class="mono">dqf-quickwins.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">903</td><td><span class="badge save">85.8%</span></td></tr>
+<tr><td class="mono">dqf-truncation-fix.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">699</td><td><span class="badge save">81.7%</span></td></tr>
+<tr><td class="mono">dqf-v2-fixes-round2.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">870</td><td><span class="badge save">85.3%</span></td></tr>
+<tr><td class="mono">dqf-wrap.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">1101</td><td><span class="badge save">88.4%</span></td></tr>
+<tr><td class="mono">drug-potency-explanation.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">732</td><td><span class="badge save">82.5%</span></td></tr>
+<tr><td class="mono">fix-celecoxib-profile.pm1</td><td>2026-07-16</td><td>fixer</td><td>morse</td><td class="mono">755</td><td><span class="badge save">83.0%</span></td></tr>
+<tr><td class="mono">fix-diclofenac-profile.pm1</td><td>2026-07-16</td><td>fixer</td><td>morse</td><td class="mono">933</td><td><span class="badge save">86.3%</span></td></tr>
+<tr><td class="mono">fix-launchd-daily-plist.pm1</td><td>2026-07-17</td><td>orchestrator</td><td>morse</td><td class="mono">803</td><td><span class="badge save">84.1%</span></td></tr>
+<tr><td class="mono">fix-opencode-macbook-pro.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">680</td><td><span class="badge save">81.2%</span></td></tr>
+<tr><td class="mono">fix-paracetamol-audit.pm1</td><td>2026-07-16</td><td>fixer</td><td>morse</td><td class="mono">822</td><td><span class="badge save">84.4%</span></td></tr>
+<tr><td class="mono">fix-pm1-trace-path.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">617</td><td><span class="badge save">79.3%</span></td></tr>
+<tr><td class="mono">fixer-dashboard-app.pm1</td><td>2026-07-15</td><td>fixer</td><td>morse</td><td class="mono">760</td><td><span class="badge save">83.2%</span></td></tr>
+<tr><td class="mono">fixer-refresh-context-tool.pm1</td><td>2026-07-17</td><td>fixer</td><td>morse</td><td class="mono">862</td><td><span class="badge save">85.2%</span></td></tr>
+<tr><td class="mono">fixer-t5-parser-rewrite.pm1</td><td>2026-07-15</td><td>fixer</td><td>morse</td><td class="mono">742</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">fixer-trace-normalization-failure-script.pm1</td><td>2026-07-17</td><td>fixer</td><td>morse</td><td class="mono">921</td><td><span class="badge save">86.1%</span></td></tr>
+<tr><td class="mono">idx-api-research.pm1</td><td>2026-07-15</td><td>librarian</td><td>morse</td><td class="mono">701</td><td><span class="badge save">81.7%</span></td></tr>
+<tr><td class="mono">kaggle-dataset-search-20260717.pm1</td><td>2026-07-17</td><td>librarian</td><td>morse</td><td class="mono">787</td><td><span class="badge save">83.7%</span></td></tr>
+<tr><td class="mono">mac-mini-autologin.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">678</td><td><span class="badge save">81.1%</span></td></tr>
+<tr><td class="mono">mac-mini-bonsai-host-memory.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">700</td><td><span class="badge save">81.7%</span></td></tr>
+<tr><td class="mono">mac-mini-bonsai-setup.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">832</td><td><span class="badge save">84.6%</span></td></tr>
+<tr><td class="mono">mac-mini-check-and-shutdown.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">721</td><td><span class="badge save">82.2%</span></td></tr>
+<tr><td class="mono">mac-mini-comprehensive-status.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">737</td><td><span class="badge save">82.6%</span></td></tr>
+<tr><td class="mono">mac-mini-pipeline-launch.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">961</td><td><span class="badge save">86.7%</span></td></tr>
+<tr><td class="mono">mac-mini-restart-recovery.pm1</td><td>2026-07-20</td><td>coordinator</td><td>morse</td><td class="mono">849</td><td><span class="badge save">84.9%</span></td></tr>
+<tr><td class="mono">mac-mini-thermal-check.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">733</td><td><span class="badge save">82.5%</span></td></tr>
+<tr><td class="mono">memory-bonsai-live-setup.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">702</td><td><span class="badge save">81.8%</span></td></tr>
+<tr><td class="mono">memory-check-pharmacology.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">707</td><td><span class="badge save">81.9%</span></td></tr>
+<tr><td class="mono">memory-write-pharmacology-framework.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">808</td><td><span class="badge save">84.2%</span></td></tr>
+<tr><td class="mono">morse-opencode_plugin.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">562</td><td><span class="badge save">77.2%</span></td></tr>
+<tr><td class="mono">morse-paper.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">529</td><td><span class="badge save">75.8%</span></td></tr>
+<tr><td class="mono">morse.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">526</td><td><span class="badge save">75.7%</span></td></tr>
+<tr><td class="mono">parser-rewrite.pm1</td><td>2026-07-15</td><td>fixer</td><td>morse</td><td class="mono">704</td><td><span class="badge save">81.8%</span></td></tr>
+<tr><td class="mono">phase0-demo-verify.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">939</td><td><span class="badge save">86.4%</span></td></tr>
+<tr><td class="mono">phase1-production-data.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">814</td><td><span class="badge save">84.3%</span></td></tr>
+<tr><td class="mono">phase1-statin-assembly.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">1108</td><td><span class="badge save">88.4%</span></td></tr>
+<tr><td class="mono">phase2-dashboard.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">824</td><td><span class="badge save">84.5%</span></td></tr>
+<tr><td class="mono">phase2a-statin-builder.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">923</td><td><span class="badge save">86.1%</span></td></tr>
+<tr><td class="mono">phase2b-statin-holdout.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">755</td><td><span class="badge save">83.0%</span></td></tr>
+<tr><td class="mono">phase3-alert-engine.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">831</td><td><span class="badge save">84.6%</span></td></tr>
+<tr><td class="mono">phase3-statin-pdf-build.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">699</td><td><span class="badge save">81.7%</span></td></tr>
+<tr><td class="mono">phase3-yaml-config.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">922</td><td><span class="badge save">86.1%</span></td></tr>
+<tr><td class="mono">phase4-automation.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">988</td><td><span class="badge save">87.0%</span></td></tr>
+<tr><td class="mono">phase4-cross-class-comparison.pm1</td><td>2026-07-16</td><td>orchestrator</td><td>morse</td><td class="mono">843</td><td><span class="badge save">84.8%</span></td></tr>
+<tr><td class="mono">prediction-pl.pm1</td><td>2026-07-18</td><td>orchestrator</td><td>morse</td><td class="mono">807</td><td><span class="badge save">84.1%</span></td></tr>
+<tr><td class="mono">pro-memoria-efficiency-report.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">877</td><td><span class="badge save">85.4%</span></td></tr>
+<tr><td class="mono">pro-memoria-homebase-init.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">891</td><td><span class="badge save">85.6%</span></td></tr>
+<tr><td class="mono">pro-memoria-move.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">569</td><td><span class="badge save">77.5%</span></td></tr>
+<tr><td class="mono">pro-memoria-push.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">746</td><td><span class="badge save">82.8%</span></td></tr>
+<tr><td class="mono">ramble-30-minutes.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">715</td><td><span class="badge save">82.1%</span></td></tr>
+<tr><td class="mono">ramble-crash-log.pm1</td><td>2026-07-19</td><td>coordinator</td><td>morse</td><td class="mono">717</td><td><span class="badge save">82.1%</span></td></tr>
+<tr><td class="mono">react-demo-enhance.pm1</td><td>2026-07-20</td><td>fixer</td><td>morse</td><td class="mono">810</td><td><span class="badge save">84.2%</span></td></tr>
+<tr><td class="mono">readme-pitch-pro-memoria.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">745</td><td><span class="badge save">82.8%</span></td></tr>
+<tr><td class="mono">reddit-draft-pro-memoria.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">755</td><td><span class="badge save">83.0%</span></td></tr>
+<tr><td class="mono">reddit-draft-v2.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">736</td><td><span class="badge save">82.6%</span></td></tr>
+<tr><td class="mono">relocate-morse-agentic-layer.pm1</td><td>2026-07-15</td><td>coordinator</td><td>morse</td><td class="mono">867</td><td><span class="badge save">85.2%</span></td></tr>
+<tr><td class="mono">research-idx-t5-pdf.pm1</td><td>2026-07-15</td><td>librarian</td><td>morse</td><td class="mono">884</td><td><span class="badge save">85.5%</span></td></tr>
+<tr><td class="mono">retrace-AndroidDev.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">1118</td><td><span class="badge save">88.6%</span></td></tr>
+<tr><td class="mono">retrace-articles.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">938</td><td><span class="badge save">86.4%</span></td></tr>
+<tr><td class="mono">retrace-built.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">694</td><td><span class="badge save">81.6%</span></td></tr>
+<tr><td class="mono">retrace-Deers-Rock-1.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">5508</td><td><span class="badge save">97.7%</span></td></tr>
+<tr><td class="mono">retrace-Deers-Rock-2.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">5960</td><td><span class="badge save">97.9%</span></td></tr>
+<tr><td class="mono">retrace-Deers-Rock-3.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">3567</td><td><span class="badge save">96.4%</span></td></tr>
+<tr><td class="mono">retrace-Deers-Rock-4.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">668</td><td><span class="badge save">80.8%</span></td></tr>
+<tr><td class="mono">retrace-Deers-Rock.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">1246</td><td><span class="badge save">89.7%</span></td></tr>
+<tr><td class="mono">retrace-dqf-analyze.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">2536</td><td><span class="badge save">95.0%</span></td></tr>
+<tr><td class="mono">retrace-dqf-framework.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">3792</td><td><span class="badge save">96.6%</span></td></tr>
+<tr><td class="mono">retrace-drug-quantification-framework.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">1645</td><td><span class="badge save">92.2%</span></td></tr>
+<tr><td class="mono">retrace-ImaGen.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">8201</td><td><span class="badge save">98.4%</span></td></tr>
+<tr><td class="mono">retrace-root.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">682</td><td><span class="badge save">81.2%</span></td></tr>
+<tr><td class="mono">retrace-scripts.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">860</td><td><span class="badge save">85.1%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-1.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">7357</td><td><span class="badge save">98.3%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-2.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">7065</td><td><span class="badge save">98.2%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-3.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">6565</td><td><span class="badge save">98.1%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-4.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">6311</td><td><span class="badge save">98.0%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-5.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">6025</td><td><span class="badge save">97.9%</span></td></tr>
+<tr><td class="mono">retrace-self-harness-6.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">1919</td><td><span class="badge save">93.3%</span></td></tr>
+<tr><td class="mono">retrace-substack-interact.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">742</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">retrace-substack-mcp.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">1554</td><td><span class="badge save">91.8%</span></td></tr>
+<tr><td class="mono">retrace-t5-pipeline.pm1</td><td>2026-07-20</td><td>general</td><td>morse</td><td class="mono">2248</td><td><span class="badge save">94.3%</span></td></tr>
+<tr><td class="mono">retroactive-bonsai-benchmark.pm1</td><td>2026-07-17</td><td>librarian</td><td>morse</td><td class="mono">791</td><td><span class="badge save">83.8%</span></td></tr>
+<tr><td class="mono">retroactive-drug-potency-research.pm1</td><td>2026-07-16</td><td>librarian</td><td>morse</td><td class="mono">926</td><td><span class="badge save">86.2%</span></td></tr>
+<tr><td class="mono">retroactive-universal-adaptor-research.pm1</td><td>2026-07-16</td><td>librarian</td><td>morse</td><td class="mono">896</td><td><span class="badge save">85.7%</span></td></tr>
+<tr><td class="mono">rusafi-translation.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">844</td><td><span class="badge save">84.8%</span></td></tr>
+<tr><td class="mono">sanitize-push.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">882</td><td><span class="badge save">85.5%</span></td></tr>
+<tr><td class="mono">scaffold-pro-memoria-package.pm1</td><td>2026-07-20</td><td>fixer</td><td>morse</td><td class="mono">874</td><td><span class="badge save">85.4%</span></td></tr>
+<tr><td class="mono">session-androiddev-move.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">606</td><td><span class="badge save">78.9%</span></td></tr>
+<tr><td class="mono">session-bonsai-image-generations.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">834</td><td><span class="badge save">84.7%</span></td></tr>
+<tr><td class="mono">session-day10.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">713</td><td><span class="badge save">82.0%</span></td></tr>
+<tr><td class="mono">session-fix-l3-bug.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">924</td><td><span class="badge save">86.1%</span></td></tr>
+<tr><td class="mono">session-holdout-results.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">827</td><td><span class="badge save">84.5%</span></td></tr>
+<tr><td class="mono">session-macmini-setup-bonsai-image.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">975</td><td><span class="badge save">86.9%</span></td></tr>
+<tr><td class="mono">session-move-cognita.pm1</td><td>2026-07-14</td><td>unlabeled</td><td>morse</td><td class="mono">621</td><td><span class="badge save">79.4%</span></td></tr>
+<tr><td class="mono">session-recovery-pro-memoria.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">676</td><td><span class="badge save">81.1%</span></td></tr>
+<tr><td class="mono">session-self-harness-install.pm1</td><td>2026-07-15</td><td>coordinator</td><td>morse</td><td class="mono">776</td><td><span class="badge save">83.5%</span></td></tr>
+<tr><td class="mono">session-solo-run.pm1</td><td>2026-07-18</td><td>coordinator</td><td>morse</td><td class="mono">784</td><td><span class="badge save">83.7%</span></td></tr>
+<tr><td class="mono">session-summary.pm1</td><td>2026-07-18</td><td>orchestrator</td><td>morse</td><td class="mono">852</td><td><span class="badge save">85.0%</span></td></tr>
+<tr><td class="mono">session-v5-validation-section.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">849</td><td><span class="badge save">84.9%</span></td></tr>
+<tr><td class="mono">session-valid-plan.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">961</td><td><span class="badge save">86.7%</span></td></tr>
+<tr><td class="mono">session-wrap-2026-07-20-macmini-memory-retrace.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">955</td><td><span class="badge save">86.6%</span></td></tr>
+<tr><td class="mono">session-wrap-20260715-lab.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">1025</td><td><span class="badge save">87.5%</span></td></tr>
+<tr><td class="mono">session-wrap-20260715.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">699</td><td><span class="badge save">81.7%</span></td></tr>
+<tr><td class="mono">session-wrap-mac-deploy-3.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">742</td><td><span class="badge save">82.7%</span></td></tr>
+<tr><td class="mono">session-wrap-other-agent.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">660</td><td><span class="badge save">80.6%</span></td></tr>
+<tr><td class="mono">session-wrap-pro-memoria-build.pm1</td><td>2026-07-20</td><td>orchestrator</td><td>morse</td><td class="mono">1384</td><td><span class="badge save">90.8%</span></td></tr>
+<tr><td class="mono">setup-mac-mini-loop.pm1</td><td>2026-07-17</td><td>coordinator</td><td>morse</td><td class="mono">954</td><td><span class="badge save">86.6%</span></td></tr>
+<tr><td class="mono">ssh-key-macbook-pro.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">688</td><td><span class="badge save">81.4%</span></td></tr>
+<tr><td class="mono">system-resilience.pm1</td><td>2026-07-18</td><td>orchestrator</td><td>morse</td><td class="mono">994</td><td><span class="badge save">87.1%</span></td></tr>
+<tr><td class="mono">t5-lab-dry-run.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">802</td><td><span class="badge save">84.0%</span></td></tr>
+<tr><td class="mono">t5-pipeline-prototype.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">713</td><td><span class="badge save">82.0%</span></td></tr>
+<tr><td class="mono">t5-pipeline-structure.pm1</td><td>2026-07-15</td><td>general</td><td>morse</td><td class="mono">1208</td><td><span class="badge save">89.4%</span></td></tr>
+<tr><td class="mono">t5-sid-live.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">732</td><td><span class="badge save">82.5%</span></td></tr>
+<tr><td class="mono">tailscale-macbook-connect.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">665</td><td><span class="badge save">80.8%</span></td></tr>
+<tr><td class="mono">tailscale-status-macbook.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">646</td><td><span class="badge save">80.2%</span></td></tr>
+<tr><td class="mono">tailscan-macbook.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">632</td><td><span class="badge save">79.7%</span></td></tr>
+<tr><td class="mono">track-efficiency.pm1</td><td>2026-07-14</td><td>coordinator</td><td>morse</td><td class="mono">823</td><td><span class="badge save">84.4%</span></td></tr>
+<tr><td class="mono">universal-adaptor-design.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">774</td><td><span class="badge save">83.5%</span></td></tr>
+<tr><td class="mono">universal-drug-adaptor-explanation.pm1</td><td>2026-07-16</td><td>coordinator</td><td>morse</td><td class="mono">736</td><td><span class="badge save">82.6%</span></td></tr>
+<tr><td class="mono">verify-daily-20260715.pm1</td><td>2026-07-15</td><td>orchestrator</td><td>morse</td><td class="mono">704</td><td><span class="badge save">81.8%</span></td></tr>
+<tr><td class="mono">vibe-trading-explore.pm1</td><td>2026-07-15</td><td>coordinator</td><td>morse</td><td class="mono">810</td><td><span class="badge save">84.2%</span></td></tr>
+<tr class="json-row"><td class="mono">20260715-033759-pm1-project-relocate.json</td><td></td><td>json-fallback</td><td>json</td><td class="mono">437</td><td><span class="badge none">—</span></td></tr>
+<tr class="json-row"><td class="mono">20260715T163000-session-wrap.json</td><td></td><td>json-fallback</td><td>json</td><td class="mono">1425</td><td><span class="badge none">—</span></td></tr>
+<tr class="json-row"><td class="mono">20260715T180000-session-wrap.json</td><td></td><td>json-fallback</td><td>json</td><td class="mono">1039</td><td><span class="badge none">—</span></td></tr>
+<tr class="json-row"><td class="mono">20260715T220000-session-wrap-faq.json</td><td></td><td>json-fallback</td><td>json</td><td class="mono">1443</td><td><span class="badge none">—</span></td></tr>
+<tr class="json-row"><td class="mono">20260715T233000-session-wrap-finetune.json</td><td></td><td>json-fallback</td><td>json</td><td class="mono">1243</td><td><span class="badge none">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  PM-1 Efficiency Report &mdash; Pro Memoria Project
+</div>
+
+<script>
+var savingsPct = 89.4;
+</script>
+
+<script>
+/* ── Chart 1: Savings Over Time ── */
+(function() {
+  var chart = echarts.init(document.getElementById('chart-timeseries'));
+  var dates = ["2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20"];
+  var values = [80.4, 83.9, 85.3, 84.2, 84.0, 82.8, 94.5];
+  var option = {
+    tooltip: { trigger: 'axis', valueFormatter: function(v) { return v.toFixed(1) + '%'; } },
+    grid: { left: '8%', right: '8%', bottom: '12%', top: '10%' },
+    xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45, fontSize: 10 } },
+    yAxis: { type: 'value', axisLabel: { formatter: '{value}%' }, min: 0 },
+    series: [{
+      type: 'line',
+      data: values,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: { color: '#2980b9', width: 2 },
+      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+        colorStops: [{ offset: 0, color: 'rgba(41,128,185,0.3)' }, { offset: 1, color: 'rgba(41,128,185,0.02)' }]
+      }}
+    }]
+  };
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+})();
+
+/* ── Chart 2: Per-Agent Savings ── */
+(function() {
+  var chart = echarts.init(document.getElementById('chart-agents'));
+  var agents = ["coordinator", "designer", "fixer", "general", "librarian", "orchestrator", "unlabeled"];
+  var values = [83.5, 85.0, 84.4, 95.5, 84.6, 84.6, 78.1];
+  var option = {
+    tooltip: { trigger: 'axis', valueFormatter: function(v) { return v.toFixed(1) + '%'; } },
+    grid: { left: '12%', right: '8%', bottom: '10%', top: '10%' },
+    xAxis: { type: 'category', data: agents, axisLabel: { rotate: 30, fontSize: 10 } },
+    yAxis: { type: 'value', axisLabel: { formatter: '{value}%' } },
+    series: [{
+      type: 'bar',
+      data: values.map(function(v) {
+        return { value: v, itemStyle: { color: v >= 70 ? '#27ae60' : v >= 50 ? '#f39c12' : '#e74c3c' } };
+      }),
+      barMaxWidth: 40,
+    }]
+  };
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+})();
+
+/* ── Chart 3: Encoding Distribution ── */
+(function() {
+  var chart = echarts.init(document.getElementById('chart-encoding'));
+  var encNames = ["morse"];
+  var encValues = [161];
+  var colors = { 'morse': '#2980b9', 'braille': '#8e44ad', 'json': '#95a5a6' };
+  var option = {
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    series: [{
+      type: 'pie',
+      radius: ['30%', '70%'],
+      center: ['50%', '55%'],
+      data: encNames.map(function(n, i) {
+        return { name: n, value: encValues[i], itemStyle: { color: colors[n] || '#bdc3c7' } };
+      }),
+      label: { formatter: '{b}\n{d}%', fontSize: 11 },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.2)' } }
+    }]
+  };
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+})();
+
+/* ── Chart 4: Top Saving Traces ── */
+(function() {
+  var chart = echarts.init(document.getElementById('chart-topsavers'));
+  var topNames = ["retrace-ImaGen.pm1", "retrace-self-harness-1.pm1", "retrace-self-harness-2.pm1", "retrace-self-harness-3.pm1", "retrace-self-harness-4.pm1", "retrace-self-harness-5.pm1", "retrace-Deers-Rock-2.pm1", "retrace-Deers-Rock-1.pm1", "retrace-dqf-framework.pm1", "retrace-Deers-Rock-3.pm1"];
+  var topValues = [8073, 7229, 6937, 6437, 6183, 5897, 5832, 5380, 3664, 3439];
+  var option = {
+    tooltip: { trigger: 'axis', valueFormatter: function(v) { return v + ' B'; } },
+    grid: { left: '25%', right: '8%', bottom: '10%', top: '8%' },
+    xAxis: { type: 'value', axisLabel: { formatter: '{value} B' } },
+    yAxis: {
+      type: 'category',
+      data: topNames,
+      axisLabel: { fontSize: 9, width: 120, overflow: 'truncate' }
+    },
+    series: [{
+      type: 'bar',
+      data: topValues.map(function(v) {
+        return { value: v, itemStyle: { color: v > 500 ? '#27ae60' : v > 200 ? '#f39c12' : '#3498db' } };
+      }),
+      barMaxWidth: 20,
+    }]
+  };
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+})();
+
+/* ── Table sorting ── */
+(function() {
+  var table = document.getElementById('trace-table');
+  var thead = table.querySelector('thead');
+  var tbody = table.querySelector('tbody');
+  var sortDir = {};
+
+  thead.addEventListener('click', function(e) {
+    var th = e.target.closest('th');
+    if (!th) return;
+    var col = th.getAttribute('data-col');
+    if (!col) return;
+
+    var dir = sortDir[col] === 'asc' ? 'desc' : 'asc';
+    sortDir[col] = dir;
+
+    // Clear sort indicators
+    thead.querySelectorAll('th').forEach(function(h) {
+      h.classList.remove('sort-asc', 'sort-desc');
+    });
+    th.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var colIdx = Array.from(th.parentNode.children).indexOf(th);
+
+    rows.sort(function(a, b) {
+      var av = a.children[colIdx] ? a.children[colIdx].textContent.trim() : '';
+      var bv = b.children[colIdx] ? b.children[colIdx].textContent.trim() : '';
+      var an = parseFloat(av);
+      var bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) {
+        return dir === 'asc' ? an - bn : bn - an;
+      }
+      return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  });
+})();
+</script>
+
+</body>
+</html>
