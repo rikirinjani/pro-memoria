@@ -10,6 +10,9 @@ Quick start:
     '.-.....-'
 """
 
+__version__ = "1.0.0"
+"""
+
 # ── Phase 1: Core bits <-> Morse ──────────────────────────────────────
 from .core import bits_to_morse, morse_to_bits, encode_bytes, decode_bytes
 

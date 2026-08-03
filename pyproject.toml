@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pro-memoria"
-version = "0.1.0"
+version = "1.0.0"
 description = "Single-agent state telemetry protocol — ASCII Morse encoding for token-efficient agent state"
 readme = "README.md"
 license = {text = "Apache-2.0"}
