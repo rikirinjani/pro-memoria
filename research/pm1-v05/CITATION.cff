@@ -21,8 +21,8 @@ identifiers:
   - type: doi
     value: "10.0000/PLACEHOLDER"  # TODO: replace with Zenodo DOI at release
     description: "Zenodo record for raw experimental data (V0.5 checkpoint + hop records, V0.4a hop records)"
-repository-code: "https://github.com/PLACEHOLDER/pm1-v05"  # TODO: replace at release
-version: "0.5.0-draft"  # TODO: finalize at release
+repository-code: "https://github.com/rikirinjani/pro-memoria"
+version: "0.5.0"
 date-released: "2026-08-19"
 keywords:
   - agent handoff
