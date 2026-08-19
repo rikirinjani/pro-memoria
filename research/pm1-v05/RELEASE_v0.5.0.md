@@ -5,7 +5,7 @@
 - **Git commit SHA:** 0907e5a (artifact) / 04af8bb (CITATION.cff update)
 - **GitHub repository:** https://github.com/rikirinjani/pro-memoria
 - **Artifact path in repo:** `research/pm1-v05/`
-- **Zenodo DOI:** *pending — to be inserted after deposition* (placeholder)
+- **Zenodo DOI:** 10.5281/zenodo.22005884
 
 ## Experiment scope (frozen)
 

@@ -3,7 +3,7 @@
 ## What lives here
 
 This directory is the pointer for the large raw experimental artifacts. They
-are archived on **Zenodo** (DOI: *placeholder — to be assigned at release*),
+are archived on **Zenodo** (DOI: 10.5281/zenodo.22005884),
 not in this Git repository, because they are large, immutable experiment
 outputs:
 
