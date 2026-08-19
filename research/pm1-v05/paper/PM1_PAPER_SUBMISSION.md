@@ -509,9 +509,9 @@ to the position of relevant information and degrades as context grows
 [Liu et al., 2024]. This motivates the architectural alternative of not
 accumulating long context at all.
 
-[CITATION NEEDED] formal taxonomies of agent handoff and stateful-agent
-architecture surveys beyond the works above; no verified source was available
-at the time of writing, and none is fabricated.
+A comprehensive taxonomy of agent handoff and stateful-agent architectures
+is beyond the scope of this paper; the related work above covers the
+verified works most directly relevant to PM-1.
 
 ---
 
@@ -685,9 +685,6 @@ H1000. The complete 116,100-call registered matrix was not executed.
 10. R. Rinjani. *Pro Memoria (PM-1) V0.5 research artifact*, version 0.5.0.
     Zenodo. https://doi.org/10.5281/zenodo.22005884. (Research data/software
     release; not a peer-reviewed publication.)
-
-[CITATION NEEDED] for formal agent-handoff taxonomies and stateful-agent
-architecture surveys — not fabricated; to be added from verified sources.
 
 ---
 

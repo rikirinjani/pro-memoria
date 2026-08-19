@@ -34,8 +34,9 @@ Date: 2026-08-19. Manuscript preparation only — no arXiv submission created.
 ## References / bibliography
 
 - 9 verified references unchanged; artifact added as [10].
-- 1 remaining [CITATION NEEDED] placeholder (formal agent-handoff taxonomies
-  / stateful-agent surveys) — no verified source, not fabricated.
+- No [CITATION NEEDED] placeholders remain in the manuscript. The former
+  placeholder for formal agent-handoff taxonomies / stateful-agent surveys
+  was rewritten as an explicit scope statement in Related Work.
 
 ## LaTeX / PDF readiness
 

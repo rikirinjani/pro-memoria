@@ -564,9 +564,9 @@ to the position of relevant information and degrades as context grows
 [Liu et al., 2024]. This motivates the architectural alternative of not
 accumulating long context at all.
 
-[CITATION NEEDED] formal taxonomies of agent handoff and stateful-agent
-architecture surveys beyond the works above; no verified source was available
-at the time of writing, and none is fabricated.
+A comprehensive taxonomy of agent handoff and stateful-agent architectures
+is beyond the scope of this paper; the related work above covers the
+verified works most directly relevant to PM-1.
 
 = 8. Limitations
 
@@ -730,6 +730,3 @@ preserve current institutional truth as knowledge changes over time.
 9. J. Li, Q. Tu, C. Mao, Z. Yu, J.-R. Wen, R. Yan. *StreamingDialogue:
    Prolonged Dialogue Learning via Long Context Compression with Minimal
    Losses.* NeurIPS 2024. arXiv:2403.08312.
-
-[CITATION NEEDED] for formal agent-handoff taxonomies and stateful-agent
-architecture surveys — not fabricated; to be added from verified sources.
