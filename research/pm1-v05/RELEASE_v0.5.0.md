@@ -2,7 +2,7 @@
 
 - **Release version:** v0.5.0
 - **Release date:** 2026-08-19
-- **Git commit SHA:** 0907e5a (artifact) / 04af8bb (CITATION.cff update)
+- **Git commit SHA:** 86b1f41 (release HEAD; artifact 0907e5a)
 - **GitHub repository:** https://github.com/rikirinjani/pro-memoria
 - **Artifact path in repo:** `research/pm1-v05/`
 - **Zenodo DOI:** 10.5281/zenodo.22005884
