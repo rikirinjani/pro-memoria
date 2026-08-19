@@ -1,0 +1,13 @@
+# PM-1 V0.5 benchmark — runtime dependencies
+# Python 3.12 recommended (developed/tested on 3.12).
+#
+# The benchmark harness uses only the Python standard library for execution
+# (urllib for provider calls, ssl, json, hashlib, tempfile, ast, dataclasses).
+# No third-party runtime packages are required to run the benchmark itself.
+
+# Development / offline verification
+pytest>=8.0
+
+# Figure generation (paper/figures; not required to run the benchmark)
+matplotlib>=3.8
+numpy>=1.26

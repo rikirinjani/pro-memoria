@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software or dataset, please cite it as below."
+title: "Pro Memoria (PM-1): Skip-Based State Transmission for Long-Horizon Agent Handoffs — V0.5 Benchmark Artifact"
+abstract: >-
+  PM-1 is a handoff architecture for sequential agent workflows organized
+  around the principle "skip, don't compress": known or unnecessary history
+  is not retransmitted across fresh-worker handoffs; each worker receives a
+  bounded continuation-state packet. This artifact contains the V0.5
+  benchmark (26,100 completed API-backed handoffs across horizons H10-H250),
+  comparing bounded PM-1 state transmission against accumulating
+  conversational history (90.43% cumulative-token reduction at H250), the
+  V0.4a state-survival experiment (4,000 calls), the benchmark harness,
+  results, and the accompanying manuscript.
+type: software
+authors:
+  - family-names: "Rinjani"
+    given-names: "Riki"
+    affiliation: "Hisfarma IAI (Himpunan Seminat Farmasi Komunitas Ikatan Apoteker Indonesia)"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: add real ORCID if available
+identifiers:
+  - type: doi
+    value: "10.0000/PLACEHOLDER"  # TODO: replace with Zenodo DOI at release
+    description: "Zenodo record for raw experimental data (V0.5 checkpoint + hop records, V0.4a hop records)"
+repository-code: "https://github.com/PLACEHOLDER/pm1-v05"  # TODO: replace at release
+version: "0.5.0-draft"  # TODO: finalize at release
+date-released: "2026-08-19"
+keywords:
+  - agent handoff
+  - context management
+  - state transmission
+  - token economics
+  - long-horizon agents
+  - LLM agents
+license: "MIT (code); CC-BY-4.0 (data, manuscript)"  # TODO: confirm per LICENSE before release
+references:
+  - type: software
+    title: "PM-1 / Pro Memoria architecture and V0.5 benchmark documentation"
+    notes: "See ARCHITECTURE.md and results/v0.5/V0.5_POST_H250_CONSOLIDATION_REPORT.md in this artifact"
+  - type: conference-paper
+    title: "Pro Memoria: Skip-Based State Transmission for Long-Horizon Agent Handoffs"
+    authors:
+      - family-names: "Rinjani"
+        given-names: "Riki"
+    # venue: "arXiv"  # TODO: add after submission
+    # year: 2026

@@ -1,0 +1,1145 @@
+{
+  "diversity": {
+    "chains": 10,
+    "chains_with_target_changes": 10,
+    "initial_action_coverage": {
+      "BUY": 6,
+      "HOLD": 1,
+      "SELL": 3
+    },
+    "multi_unit_diffs": 6,
+    "negative_positions": 3,
+    "positive_positions": 4,
+    "zero_positions": 3
+  },
+  "experiment": {
+    "H-corrupt": {
+      "chains": [
+        {
+          "chain_id": "chain-01",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-02",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-03",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-04",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-05",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 20000,
+            "position_qty": -1,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-06",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 40000,
+            "position_qty": -3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-07",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-08",
+          "chain_survived": false,
+          "failure_counts": {
+            "PARSE_ERROR": 1,
+            "PASS": 99
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": 40,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 3
+          },
+          "recovery_events": 0,
+          "total_failures": 1
+        },
+        {
+          "chain_id": "chain-09",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 30000,
+            "position_qty": -2,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-10",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -30000,
+            "position_qty": 4,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        }
+      ],
+      "metrics": {
+        "action_accuracy_oracle": 0.979,
+        "action_accuracy_received": 0.999,
+        "average_tokens_per_handoff": 495.846,
+        "chain_survival_rate": 0.9,
+        "corruption_hops": 20,
+        "cumulative_abs_divergence": 0,
+        "cumulative_tokens": 495846,
+        "digest_continuity": 1.0,
+        "failure_counts": {
+          "PARSE_ERROR": 1,
+          "PASS": 999
+        },
+        "handoff_success_rate": 0.999,
+        "max_abs_divergence": 0,
+        "mean_abs_divergence": 0.0,
+        "recovery_events": 0,
+        "restore_hops": 0,
+        "state_integrity": 1.0,
+        "successful_handoffs": 999,
+        "survived_chains": 9,
+        "token_usage_available_hops": 1000,
+        "token_usage_complete": true,
+        "total_chains": 10,
+        "total_handoffs": 1000,
+        "total_input_tokens": 400729,
+        "total_output_tokens": 95117
+      }
+    },
+    "H-direct": {
+      "chains": [
+        {
+          "chain_id": "chain-01",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-02",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-03",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-04",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-05",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 20000,
+            "position_qty": -1,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-06",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 40000,
+            "position_qty": -3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-07",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-08",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 3
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-09",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 30000,
+            "position_qty": -2,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-10",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -30000,
+            "position_qty": 4,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        }
+      ],
+      "metrics": {
+        "action_accuracy_oracle": 1.0,
+        "action_accuracy_received": 1.0,
+        "average_tokens_per_handoff": 379.016,
+        "chain_survival_rate": 1.0,
+        "corruption_hops": 0,
+        "cumulative_abs_divergence": 0,
+        "cumulative_tokens": 379016,
+        "digest_continuity": 1.0,
+        "failure_counts": {
+          "PASS": 1000
+        },
+        "handoff_success_rate": 1.0,
+        "max_abs_divergence": 0,
+        "mean_abs_divergence": 0.0,
+        "recovery_events": 0,
+        "restore_hops": 0,
+        "state_integrity": 1.0,
+        "successful_handoffs": 1000,
+        "survived_chains": 10,
+        "token_usage_available_hops": 1000,
+        "token_usage_complete": true,
+        "total_chains": 10,
+        "total_handoffs": 1000,
+        "total_input_tokens": 304000,
+        "total_output_tokens": 75016
+      }
+    },
+    "H-full": {
+      "chains": [
+        {
+          "chain_id": "chain-01",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-02",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-03",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-04",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-05",
+          "chain_survived": false,
+          "failure_counts": {
+            "PARSE_ERROR": 1,
+            "PASS": 99
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": 24,
+          "initial_state": {
+            "cash_cents": 20000,
+            "position_qty": -1,
+            "target_signal": 0
+          },
+          "recovery_events": 0,
+          "total_failures": 1
+        },
+        {
+          "chain_id": "chain-06",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 40000,
+            "position_qty": -3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-07",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-08",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 3
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-09",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 30000,
+            "position_qty": -2,
+            "target_signal": 1
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-10",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -30000,
+            "position_qty": 4,
+            "target_signal": 2
+          },
+          "recovery_events": 0,
+          "total_failures": 0
+        }
+      ],
+      "metrics": {
+        "action_accuracy_oracle": 0.999,
+        "action_accuracy_received": 0.999,
+        "average_tokens_per_handoff": 494.821,
+        "chain_survival_rate": 0.9,
+        "corruption_hops": 0,
+        "cumulative_abs_divergence": 0,
+        "cumulative_tokens": 494821,
+        "digest_continuity": 1.0,
+        "failure_counts": {
+          "PARSE_ERROR": 1,
+          "PASS": 999
+        },
+        "handoff_success_rate": 0.999,
+        "max_abs_divergence": 0,
+        "mean_abs_divergence": 0.0,
+        "recovery_events": 0,
+        "restore_hops": 0,
+        "state_integrity": 1.0,
+        "successful_handoffs": 999,
+        "survived_chains": 9,
+        "token_usage_available_hops": 1000,
+        "token_usage_complete": true,
+        "total_chains": 10,
+        "total_handoffs": 1000,
+        "total_input_tokens": 400733,
+        "total_output_tokens": 94088
+      }
+    },
+    "H-recover": {
+      "chains": [
+        {
+          "chain_id": "chain-01",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 0
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-02",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 1
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-03",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 0
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-04",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 2
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-05",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 20000,
+            "position_qty": -1,
+            "target_signal": 0
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-06",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "final_expected_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 3
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 40000,
+            "position_qty": -3,
+            "target_signal": 1
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-07",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -20000,
+            "position_qty": 3,
+            "target_signal": 1
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-08",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "final_expected_state": {
+            "cash_cents": 0,
+            "position_qty": 1,
+            "target_signal": 1
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 10000,
+            "position_qty": 0,
+            "target_signal": 3
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-09",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": 30000,
+            "position_qty": -2,
+            "target_signal": 1
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        },
+        {
+          "chain_id": "chain-10",
+          "chain_survived": true,
+          "failure_counts": {
+            "PASS": 100
+          },
+          "final_actual_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "final_expected_state": {
+            "cash_cents": -10000,
+            "position_qty": 2,
+            "target_signal": 2
+          },
+          "first_failed_hop": null,
+          "initial_state": {
+            "cash_cents": -30000,
+            "position_qty": 4,
+            "target_signal": 2
+          },
+          "recovery_events": 2,
+          "total_failures": 0
+        }
+      ],
+      "metrics": {
+        "action_accuracy_oracle": 0.98,
+        "action_accuracy_received": 1.0,
+        "average_tokens_per_handoff": 494.44,
+        "chain_survival_rate": 1.0,
+        "corruption_hops": 20,
+        "cumulative_abs_divergence": 0,
+        "cumulative_tokens": 494440,
+        "digest_continuity": 1.0,
+        "failure_counts": {
+          "PASS": 1000
+        },
+        "handoff_success_rate": 1.0,
+        "max_abs_divergence": 0,
+        "mean_abs_divergence": 0.0,
+        "recovery_events": 20,
+        "restore_hops": 20,
+        "state_integrity": 1.0,
+        "successful_handoffs": 1000,
+        "survived_chains": 10,
+        "token_usage_available_hops": 1000,
+        "token_usage_complete": true,
+        "total_chains": 10,
+        "total_handoffs": 1000,
+        "total_input_tokens": 400729,
+        "total_output_tokens": 93711
+      }
+    }
+  }
+}

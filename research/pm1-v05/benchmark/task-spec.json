@@ -1,0 +1,16 @@
+{
+  "task_id": "pm1-trading-benchmark-architecture",
+  "relevant_tags": ["relevant", "trading", "architecture"],
+  "spec_ref": "pm1-trading-benchmark/ARCHITECTURE.md",
+  "brief": "Review the proposed deterministic synthetic trading simulator and minimum fresh-worker continuation benchmark. Do not implement simulator code until the proposal is approved.",
+  "required_outputs": [
+    "architecture proposal",
+    "state and event model",
+    "worker/session lifecycle",
+    "minimum benchmark protocol",
+    "evaluation metrics",
+    "fault-injection strategy",
+    "minimal implementation plan",
+    "unresolved decisions"
+  ]
+}

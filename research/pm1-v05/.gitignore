@@ -1,0 +1,44 @@
+# Secrets / credentials — never commit
+.llm_creds.json
+.env
+.env.*
+*.pem
+*.key
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Internal / private utilities (not part of the public artifact)
+check_env.py
+extract_creds.py
+compiled_context.json
+test_llm_local.py
+
+# Internal preflight artifacts
+results/preflight/
+
+# Earlier experiment versions (private/archive only)
+EXPERIMENT_V0.1.md
+V0.3a_PREEXPERIMENT_REPORT.md
+results/v0.2a/
+results/v0.2b/
+results/v0.3a/
+
+# Root-level unrelated internal results
+results/llm_run_results.json
+results/run_results.json
+results/replay_digests.json
+results/llm_replay_digests.json
+results/llm_experiment_report.md
+results/experiment_report.md
+
+# Large raw experiment data (archived on Zenodo; not in git)
+results/v0.5/v05a_full_checkpoint.json
+results/v0.5/v05a_full_hop_records.json
+results/v0.4a/full/v04a_full_hop_records.json
+
+# OS / editor
+Thumbs.db
+.DS_Store

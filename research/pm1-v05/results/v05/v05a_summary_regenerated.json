@@ -1,0 +1,259 @@
+{
+  "regenerated_by": "benchmark/regenerate_summary.py (offline)",
+  "source_records": "\\results\\v0.5\\v05a_full_hop_records.json",
+  "completed_call_count": 26100,
+  "completed_horizons": [
+    10,
+    25,
+    50,
+    100,
+    250
+  ],
+  "actual_by_horizon": {
+    "10": 600,
+    "25": 1500,
+    "50": 3000,
+    "100": 6000,
+    "250": 15000
+  },
+  "cumulative_token_totals_by_horizon_condition": {
+    "10": {
+      "P": 149590,
+      "C": 168676
+    },
+    "25": {
+      "P": 370703,
+      "C": 633117
+    },
+    "50": {
+      "P": 737870,
+      "C": 1957375
+    },
+    "100": {
+      "P": 1474888,
+      "C": 6819750
+    },
+    "250": {
+      "P": 3672305,
+      "C": 38366105
+    }
+  },
+  "per_hop_transmitted_context_tokens": {
+    "10": {
+      "P": {
+        "min": 78,
+        "max": 79,
+        "mean": 78.67,
+        "count": 300
+      },
+      "C": {
+        "min": 11,
+        "max": 356,
+        "mean": 161.81,
+        "count": 300
+      }
+    },
+    "25": {
+      "P": {
+        "min": 78,
+        "max": 79,
+        "mean": 78.63,
+        "count": 750
+      },
+      "C": {
+        "min": 11,
+        "max": 881,
+        "mean": 396.61,
+        "count": 750
+      }
+    },
+    "50": {
+      "P": {
+        "min": 78,
+        "max": 79,
+        "mean": 78.61,
+        "count": 1500
+      },
+      "C": {
+        "min": 11,
+        "max": 1833,
+        "mean": 788.28,
+        "count": 1500
+      }
+    },
+    "100": {
+      "P": {
+        "min": 78,
+        "max": 79,
+        "mean": 78.61,
+        "count": 3000
+      },
+      "C": {
+        "min": 11,
+        "max": 3618,
+        "mean": 1609.3,
+        "count": 3000
+      }
+    },
+    "250": {
+      "P": {
+        "min": 78,
+        "max": 79,
+        "mean": 78.6,
+        "count": 7500
+      },
+      "C": {
+        "min": 11,
+        "max": 8864,
+        "mean": 3977.78,
+        "count": 7500
+      }
+    }
+  },
+  "per_hop_transmitted_context_chars": {
+    "10": {
+      "P": {
+        "min": 314,
+        "max": 319,
+        "mean": 317.04,
+        "count": 300
+      },
+      "C": {
+        "min": 46,
+        "max": 1427,
+        "mean": 648.78,
+        "count": 300
+      }
+    },
+    "25": {
+      "P": {
+        "min": 314,
+        "max": 319,
+        "mean": 316.84,
+        "count": 750
+      },
+      "C": {
+        "min": 46,
+        "max": 3526,
+        "mean": 1588.05,
+        "count": 750
+      }
+    },
+    "50": {
+      "P": {
+        "min": 314,
+        "max": 319,
+        "mean": 316.77,
+        "count": 1500
+      },
+      "C": {
+        "min": 46,
+        "max": 7332,
+        "mean": 3154.72,
+        "count": 1500
+      }
+    },
+    "100": {
+      "P": {
+        "min": 314,
+        "max": 319,
+        "mean": 316.73,
+        "count": 3000
+      },
+      "C": {
+        "min": 46,
+        "max": 14474,
+        "mean": 6438.74,
+        "count": 3000
+      }
+    },
+    "250": {
+      "P": {
+        "min": 314,
+        "max": 319,
+        "mean": 316.71,
+        "count": 7500
+      },
+      "C": {
+        "min": 46,
+        "max": 35457,
+        "mean": 15912.62,
+        "count": 7500
+      }
+    }
+  },
+  "condition_stats": {
+    "P": {
+      "total": 13050,
+      "pass_rate": 0.999847,
+      "parse_error_rate": 0.000153,
+      "action_error_rate": 0.0,
+      "state_corruption_rate": 0.0,
+      "divergence_rate": 0.0,
+      "digest_continuity": 1.0,
+      "state_integrity": 1.0
+    },
+    "C": {
+      "total": 13050,
+      "pass_rate": 0.99977,
+      "parse_error_rate": 7.7e-05,
+      "action_error_rate": 7.7e-05,
+      "state_corruption_rate": 7.7e-05,
+      "divergence_rate": 0.000153,
+      "digest_continuity": 0.999847,
+      "state_integrity": 0.999847
+    }
+  },
+  "failure_counts": {
+    "ACTION_ERROR": 1,
+    "PARSE_ERROR": 3,
+    "STATE_CORRUPTION": 1
+  },
+  "failures": [
+    {
+      "horizon": 100,
+      "scenario": "8",
+      "trial": "chain-08",
+      "condition": "C",
+      "hop": 2,
+      "type": "ACTION_ERROR",
+      "divergence": -1
+    },
+    {
+      "horizon": 100,
+      "scenario": "8",
+      "trial": "chain-08",
+      "condition": "C",
+      "hop": 3,
+      "type": "STATE_CORRUPTION",
+      "divergence": -1
+    },
+    {
+      "horizon": 250,
+      "scenario": "3",
+      "trial": "chain-03",
+      "condition": "C",
+      "hop": 79,
+      "type": "PARSE_ERROR",
+      "divergence": 0
+    },
+    {
+      "horizon": 250,
+      "scenario": "3",
+      "trial": "chain-03",
+      "condition": "P",
+      "hop": 102,
+      "type": "PARSE_ERROR",
+      "divergence": 0
+    },
+    {
+      "horizon": 250,
+      "scenario": "9",
+      "trial": "chain-09",
+      "condition": "P",
+      "hop": 188,
+      "type": "PARSE_ERROR",
+      "divergence": 0
+    }
+  ]
+}
