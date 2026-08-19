@@ -18,6 +18,8 @@
   #text(size: 9.5pt)[Hisfarma IAI (Himpunan Seminat Farmasi Komunitas Ikatan Apoteker Indonesia)]
   #linebreak()
   #text(size: 9.5pt)[sekretariat\@hisfarma.com]
+  #linebreak()
+  #text(size: 9pt)[ORCID: 0009-0002-9364-2637]
 ]
 
 #v(0.8em)

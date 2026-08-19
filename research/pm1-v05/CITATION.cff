@@ -16,7 +16,7 @@ authors:
   - family-names: "Rinjani"
     given-names: "Riki"
     affiliation: "Hisfarma IAI (Himpunan Seminat Farmasi Komunitas Ikatan Apoteker Indonesia)"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: add real ORCID if available
+    orcid: "https://orcid.org/0009-0002-9364-2637"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.22005884"  # Zenodo DOI (raw data archive)
