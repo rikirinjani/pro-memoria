@@ -1,9 +1,8 @@
-# PM-1 V0.5 — Public README (draft)
+# PM-1 V0.5 — Public README
 
-> Public-facing reproduction README. Path-neutral; raw data download
-> instructions point to the Zenodo record (DOI placeholder). This is a draft
-> for the future `pm1-v05/` release root — do not publish until the release
-> checklist (see RELEASE_READINESS_REPORT.md) is complete.
+> Public-facing reproduction README. Released as part of the PM-1 research
+> artifact v0.5.0. Repository: https://github.com/rikirinjani/pro-memoria
+> (release v0.5.0). Raw data archive: https://doi.org/10.5281/zenodo.22005884.
 
 ---
 
@@ -105,9 +104,9 @@ local credential file that is **excluded** from this repository.
 ### Raw data
 
 The large raw artifacts (V0.5 checkpoint and hop records, V0.4a hop records)
-are archived on Zenodo: **DOI placeholder**. The repository contains the
-reproduction manifest with file hashes, the hop-record schema, and download
-instructions (see `data/README.md`).
+are archived on Zenodo: https://doi.org/10.5281/zenodo.22005884. The
+repository contains the reproduction manifest with file hashes, the hop-record
+schema, and download instructions (see `data/README.md`).
 
 ## Status documents
 

@@ -655,6 +655,23 @@ when the domain permits it. This is future architecture, not a V0.5 result.
 PM-Adapter was not the experimental variable in V0.5 and is not the basis of
 the V0.5 scientific claim.
 
+= 10.5 Code and Data Availability
+
+The benchmark implementation, experiment configuration, analysis tooling, and
+released experimental artifacts are publicly available at
+#link("https://github.com/rikirinjani/pro-memoria") (release v0.5.0). The raw
+experimental records and archival release are available through Zenodo:
+#link("https://doi.org/10.5281/zenodo.22005884").
+
+The released artifact contains: the benchmark harness and offline test suite;
+the V0.5 experiment configuration and status documents (26,100 executed calls
+across horizons H10, H25, H50, H100, H250; H500 and H1000 registered but NOT
+executed); raw hop records and checkpoint with a checksum manifest; and the
+consolidation report. The archive supports offline reproduction and analysis
+of the reported results. API-backed experimental reproduction requires
+provider credentials and paid calls; it does not require executing H500 or
+H1000. The complete 116,100-call registered matrix was not executed.
+
 = 10. Conclusion
 
 Pro Memoria is a handoff architecture, not a compression codec. Its principle
