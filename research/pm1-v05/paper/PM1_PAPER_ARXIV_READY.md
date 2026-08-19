@@ -1,7 +1,7 @@
 # Pro Memoria: Skip-Based State Transmission for Long-Horizon Agent Handoffs
 
 **Riki Rinjani, PharmD** — Hisfarma IAI (Himpunan Seminat Farmasi Komunitas
-Ikatan Apoteker Indonesia) — sekretariat@hisfarma.com — ORCID:
+Ikatan Apoteker Indonesia) — riki.rinjani@hisfarma.com — ORCID:
 0009-0002-9364-2637
 
 **Submission-ready manuscript.** All experimental numbers are preserved
